@@ -1,7 +1,11 @@
-from src.rlkit_ppo import rlkit
 from env.pigeon_gym import PigeonEnv3Joints
 
+import sys
+sys.path.append('src/rlkit_ppo')
+
 import rlkit.torch.pytorch_util as ptu
+ptu.set_gpu_mode(True)
+
 from rlkit.torch.ppo.ppo_env_replay_buffer import PPOEnvReplayBuffer
 from rlkit.envs.wrappers import NormalizedBoxEnv
 from rlkit.launchers.launcher_util import setup_logger
@@ -16,8 +20,8 @@ import torch
 
 def experiment(variant):
     torch.autograd.set_detect_anomaly(True)
-    expl_env = PigeonEnv3Joints()
-    eval_env = PigeonEnv3Joints()
+    expl_env = NormalizedBoxEnv(PigeonEnv3Joints())
+    eval_env = NormalizedBoxEnv(PigeonEnv3Joints())
     obs_dim = expl_env.observation_space.low.size
     action_dim = eval_env.action_space.low.size
 

@@ -162,6 +162,7 @@ class PigeonEnv3Joints(gym.Env):
             obs = np.concatenate((obs, self.joints[i].speed), axis = None)
         obs = np.concatenate((obs, self.body.position[0]), axis = None)
 
+        obs = np.float32(obs)
         assert self.observation_space.contains(obs)
         return obs
 

@@ -1,11 +1,9 @@
-from env.pigeon_gym import PigeonEnv3Joints
+from gym_env.pigeon_gym import PigeonEnv3Joints
 
 import sys
 sys.path.append('src/rlkit_ppo')
 
 import rlkit.torch.pytorch_util as ptu
-ptu.set_gpu_mode(True)
-
 from rlkit.torch.ppo.ppo_env_replay_buffer import PPOEnvReplayBuffer
 from rlkit.envs.wrappers import NormalizedBoxEnv
 from rlkit.launchers.launcher_util import setup_logger
@@ -103,5 +101,5 @@ if __name__ == "__main__":
         ),
     )
     setup_logger('pigeon_3_joints', variant=variant)
-    #ptu.set_gpu_mode(True)  # optionally set the GPU (default=False)
+    ptu.set_gpu_mode(True)  # optionally set the GPU (default=False)
     experiment(variant)

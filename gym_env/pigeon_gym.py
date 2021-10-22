@@ -23,7 +23,7 @@ TORQUE_WEIGHT = 0.1
 VIEWPORT_SCALE = 6.0
 
 class PigeonEnv3Joints(gym.Env):
-    def __init__(self):
+    def __init__(self, body_speed = 0):
         """
         Action and Observation space
         """
@@ -50,6 +50,7 @@ class PigeonEnv3Joints(gym.Env):
         self.bodyRef = [] # for destruction
         self.head_prev_pos = np.array([0.0, 0.0])       # head tracking
         self.head_prev_ang = 0                          # head tracking
+        self.body_speed = body_speed
         self.pigeon_model()
 
         """
@@ -73,7 +74,7 @@ class PigeonEnv3Joints(gym.Env):
         self.body = self.world.CreateKinematicBody(
             position = (0, 0),
             shapes = b2PolygonShape(box = (BODY_WIDTH, BODY_HEIGHT)), # x2 in direct shapes def
-            linearVelocity = (0, 0), # no body movement at this point
+            linearVelocity = (-self.body_speed, 0),
             angularVelocity = 0,
             )
         self.bodyRef.append(self.body)
@@ -228,7 +229,8 @@ class PigeonEnv3Joints(gym.Env):
         self.viewer.add_geom(background)
 
         # Set ORIGIN POINT relative to camera
-        camera_trans = b2Vec2(-250, -200)
+        camera_trans = b2Vec2(-250, -200) \
+        + VIEWPORT_SCALE * self.bodyRef[0].position # camera moves with body
 
         for body in self.bodyRef:
             polygon = rendering.FilledPolygon(

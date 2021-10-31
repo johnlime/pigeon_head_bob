@@ -1,11 +1,42 @@
 from gym_env.pigeon_gym import PigeonEnv3Joints
+import argparse
+import torch
+import sys
+sys.path.append('src/rlkit_ppo')
 
-env = PigeonEnv3Joints(body_speed = 10)
-observation = env.reset()
-for t in range(1000):
-    env.render()
-    # print(observation)
-    action = env.action_space.sample()
-    env.step(action)
-    # observation, reward, done, info = env.step(action)
-env.close()
+def run_rand_policy(body_speed = 0.0):
+    env = PigeonEnv3Joints(body_speed)
+    observation = env.reset()
+    for t in range(1000):
+        env.render()
+        action = env.action_space.sample()
+        env.step(action)
+    env.close()
+
+def run_trained_policy(policy, body_speed):
+    env = PigeonEnv3Joints(body_speed)
+    observation = env.reset()
+    for t in range(1000):
+        env.render()
+        action = policy.stochastic_policy(torch.from_numpy(observation))
+        action = env.action_space.sample()
+        env.step(action)
+        observation, reward, done, info = env.step(action)
+        print(reward)
+    env.close()
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('policy_file', type=str,
+                        help='path to the snapshot file')
+    parser.add_argument('--body_speed', type=float, default=0.0,
+                        help='pigeon body speed')
+    args = parser.parse_args()
+
+    if args.policy_file is None:
+        run_rand_policy(args.body_speed)
+
+    else:
+        policy = torch.load(args.policy_file,
+                            map_location=torch.device('cpu'))
+        run_trained_policy(policy, args.body_speed)

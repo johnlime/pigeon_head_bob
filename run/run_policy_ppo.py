@@ -1,9 +1,11 @@
-from src.rlkit_ppo import rlkit
+from gym_env.pigeon_gym import PigeonEnv3Joints
+
+import sys
+sys.path.append('src/rlkit_ppo')
 
 from rlkit.samplers.util import rollout
-from rlkit.torch.pytorch_util import set_gpu_mode
 import argparse
-import joblib
+import torch
 import uuid
 from rlkit.core import logger
 import numpy as np
@@ -12,13 +14,10 @@ filename = str(uuid.uuid4())
 
 
 def simulate_policy(args):
-    data = joblib.load(args.file)
-    policy = data['evaluation/policy']
-    env = data['evaluation/env']
+    data = torch.load(args.file)
+    policy = data#['evaluation/policy']
+    env = PigeonEnv3Joints()
     print("Policy loaded")
-    if args.gpu:
-        set_gpu_mode(True)
-        policy.cuda()
 
     import cv2
     video = cv2.VideoWriter('ppo_test.avi', cv2.VideoWriter_fourcc('M','J','P','G'), 30, (640, 480))

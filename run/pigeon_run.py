@@ -10,7 +10,8 @@ def run_rand_policy(body_speed = 0.0):
     for t in range(1000):
         env.render()
         action = env.action_space.sample()
-        env.step(action)
+        _, reward, _, _ = env.step(action)
+        print(reward)
     env.close()
 
 def run_trained_policy(policy, body_speed):
@@ -27,7 +28,7 @@ def run_trained_policy(policy, body_speed):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('policy_file', type=str,
+    parser.add_argument('--policy_file', type=str,
                         help='path to the snapshot file')
     parser.add_argument('--body_speed', type=float, default=0.0,
                         help='pigeon body speed')

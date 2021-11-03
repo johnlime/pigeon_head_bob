@@ -23,7 +23,7 @@ TORQUE_WEIGHT = 0.1
 VIEWPORT_SCALE = 6.0
 
 class PigeonEnv3Joints(gym.Env):
-    def __init__(self, body_speed = 0, reward_code = "head_stable_01"):
+    def __init__(self, body_speed = 0):
         """
         Action and Observation space
         """
@@ -48,6 +48,8 @@ class PigeonEnv3Joints(gym.Env):
         self.joints = []
         self.head = None
         self.bodyRef = [] # for destruction
+        self.head_prev_pos = np.array([0.0, 0.0])       # head tracking
+        self.head_prev_ang = 0                          # head tracking
         self.body_speed = body_speed
         self.pigeon_model()
 
@@ -58,21 +60,6 @@ class PigeonEnv3Joints(gym.Env):
         self.vel_iters, self.pos_iters = 10, 10
 
         self.viewer = None
-
-        """
-        Assigning a Reward Function
-        """
-        if reward_code == "head_stable_01":
-            self.head_prev_pos = np.array([0.0, 0.0])       # head tracking
-            self.head_prev_ang = 0                          # head tracking
-
-            self.reward_function = self._head_stable_01
-
-        elif reward_code == "head_stable_02":
-            self.reward_function = self._head_stable_02
-
-        else:
-            raise ValueError("Unknown reward_code")
 
     """
     Box2D Pigeon Model
@@ -185,31 +172,6 @@ class PigeonEnv3Joints(gym.Env):
         self.pigeon_model()
         return self.get_obs()
 
-    # modular reward functions
-    def _head_stable_01(self):
-        head_dif_loc = np.linalg.norm(np.array(self.head.position) - self.head_prev_pos)
-        head_dif_ang = abs(self.head.angle - self.head_prev_ang)
-
-        reward = 0
-        #threshold function
-        if head_dif_loc < 0.5:
-            reward += 1
-
-            if head_dif_ang < np.pi / 6: # 30 deg
-                reward += 1
-
-        else:
-            reward += 0
-
-        # head tracking
-        self.head_prev_pos = np.array(self.head.position)
-        self.head_prev_ang = self.head.angle
-        return reward
-
-    def _head_stable_02(self):
-        reward = 0
-        return reward
-
     def step(self, action):
         assert self.action_space.contains(action)
         # self.world.Step(self.timeStep, self.vel_iters, self.pos_iters)
@@ -228,7 +190,24 @@ class PigeonEnv3Joints(gym.Env):
                     * np.clip(np.abs(action[i]), 0, 1)
             )
 
-        reward = self.reward_function()
+        # head stabilization
+        head_dif_loc = np.linalg.norm(np.array(self.head.position) - self.head_prev_pos)
+        head_dif_ang = abs(self.head.angle - self.head_prev_ang)
+
+        reward = 0
+        #threshold function
+        if head_dif_loc < 0.5:
+            reward += 1
+
+            if head_dif_ang < np.pi / 6: # 30 deg
+                reward += 1
+
+        else:
+            reward += 0
+
+        # head tracking
+        self.head_prev_pos = np.array(self.head.position)
+        self.head_prev_ang = self.head.angle
 
         done = False
         info = {}

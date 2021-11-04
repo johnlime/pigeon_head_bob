@@ -19,8 +19,8 @@ import torch
 def experiment(variant):
     torch.autograd.set_detect_anomaly(True)
     # pigeon moves at speed of 10
-    expl_env = NormalizedBoxEnv(PigeonEnv3Joints(10))
-    eval_env = NormalizedBoxEnv(PigeonEnv3Joints(10))
+    expl_env = NormalizedBoxEnv(PigeonEnv3Joints())
+    eval_env = NormalizedBoxEnv(PigeonEnv3Joints())
     obs_dim = expl_env.observation_space.low.size
     action_dim = eval_env.action_space.low.size
 
@@ -101,6 +101,6 @@ if __name__ == "__main__":
             lr=3e-4,
         ),
     )
-    setup_logger('pigeon_3_joints_body_speed_10', variant=variant)
+    setup_logger('pigeon_3_joints_head_stable_manual_reposition_body_speed_0', variant=variant)
     ptu.set_gpu_mode(True)  # optionally set the GPU (default=False)
     experiment(variant)

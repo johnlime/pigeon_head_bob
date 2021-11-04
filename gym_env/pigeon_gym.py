@@ -23,7 +23,7 @@ TORQUE_WEIGHT = 0.1
 VIEWPORT_SCALE = 6.0
 
 class PigeonEnv3Joints(gym.Env):
-    def __init__(self, body_speed = 0, reward_code = "head_stable_01"):
+    def __init__(self, body_speed = 0, reward_code = "head_stable_manual_reposition"):
         """
         Action and Observation space
         """
@@ -63,13 +63,17 @@ class PigeonEnv3Joints(gym.Env):
         Assigning a Reward Function
         """
         if reward_code == "head_stable_01":
+            # justified since this can be regarded as a constructor
             self.head_prev_pos = np.array([0.0, 0.0])       # head tracking
             self.head_prev_ang = 0                          # head tracking
 
+            # can call method unless it's virtual (abstract)
             self.reward_function = self._head_stable_01
 
-        elif reward_code == "head_stable_02":
-            self.reward_function = self._head_stable_02
+        elif reward_code == "head_stable_manual_reposition":
+            self.head_target_location = np.array(self.head.position)
+            self.head_target_angle = self.head.angle
+            self.reward_function = self._head_stable_manual_reposition
 
         else:
             raise ValueError("Unknown reward_code")
@@ -206,7 +210,21 @@ class PigeonEnv3Joints(gym.Env):
         self.head_prev_ang = self.head.angle
         return reward
 
-    def _head_stable_02(self):
+    # ONLY WORKS ON body_speed = 0
+    def _head_stable_manual_reposition(self):
+        head_dif_loc = np.linalg.norm(np.array(self.head.position) - self.head_target_location)
+        head_dif_ang = abs(self.head.angle - self.head_target_angle)
+
+        reward = 0
+        if head_dif_loc < 0.5:
+            reward += 1 - head_dif_loc / 0.5
+
+            if head_dif_ang < np.pi / 6: # 30 deg
+                reward += 1 - head_dif_ang/ np.pi
+
+        return reward
+
+    def _head_stable_movement_minimizer(self):
         reward = 0
         return reward
 

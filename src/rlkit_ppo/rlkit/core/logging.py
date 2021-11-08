@@ -295,7 +295,6 @@ class Logger(object):
                 elif self._snapshot_mode == 'last':
                     # override previous params
                     file_name = osp.join(file_name, 'params.pt')
-                    print(param_part)
                     torch.save(param_part, file_name)
                 elif self._snapshot_mode == "gap":
                     if itr % self._snapshot_gap == 0:

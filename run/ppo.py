@@ -1,4 +1,5 @@
-from gym_env.pigeon_gym import PigeonEnv3Joints
+#from gym_env.pigeon_gym import PigeonEnv3Joints
+import gym
 
 import sys
 sys.path.append('src/rlkit_ppo')
@@ -19,8 +20,8 @@ import torch
 def experiment(variant):
     torch.autograd.set_detect_anomaly(True)
     # pigeon moves at speed of 10
-    expl_env = NormalizedBoxEnv(PigeonEnv3Joints())
-    eval_env = NormalizedBoxEnv(PigeonEnv3Joints())
+    expl_env = NormalizedBoxEnv(gym.make('BipedalWalker-v3')) #PigeonEnv3Joints())
+    eval_env = NormalizedBoxEnv(gym.make('BipedalWalker-v3')) #PigeonEnv3Joints())
     obs_dim = expl_env.observation_space.low.size
     action_dim = eval_env.action_space.low.size
 
@@ -101,6 +102,7 @@ if __name__ == "__main__":
             lr=3e-4,
         ),
     )
-    setup_logger('pigeon_3_joints_head_stable_manual_reposition_body_speed_0', variant=variant)
+    setup_logger('bipedal_walker_v2', variant=variant)
+    # setup_logger('pigeon_3_joints_head_stable_manual_reposition_body_speed_0', variant=variant)
     ptu.set_gpu_mode(True)  # optionally set the GPU (default=False)
     experiment(variant)

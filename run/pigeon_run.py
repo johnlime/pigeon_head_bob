@@ -1,6 +1,7 @@
 from gym_env.pigeon_gym import PigeonEnv3Joints
 import argparse
 import torch
+import numpy as np
 import sys
 sys.path.append('src/rlkit_ppo')
 
@@ -19,11 +20,7 @@ def run_trained_policy(policy, body_speed):
     observation = env.reset()
     for t in range(1000):
         env.render()
-        try:
-            action = policy.stochastic_policy(torch.from_numpy(observation))
-        except:
-            action = policy(torch.from_numpy(observation))
-        action = env.action_space.sample()
+        action = policy.get_action(torch.from_numpy(observation))[0]
         env.step(action)
         observation, reward, done, info = env.step(action)
         print(reward)

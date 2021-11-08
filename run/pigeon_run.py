@@ -19,7 +19,10 @@ def run_trained_policy(policy, body_speed):
     observation = env.reset()
     for t in range(1000):
         env.render()
-        action = policy.stochastic_policy(torch.from_numpy(observation))
+        try:
+            action = policy.stochastic_policy(torch.from_numpy(observation))
+        except:
+            action = policy(torch.from_numpy(observation))
         action = env.action_space.sample()
         env.step(action)
         observation, reward, done, info = env.step(action)

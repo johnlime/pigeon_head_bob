@@ -12,6 +12,7 @@ def run_rand_policy(body_speed, reward_code):
         env.render()
         action = env.action_space.sample()
         _, reward, _, _ = env.step(action)
+        # print(env.head_target_location)
         print(reward)
     env.close()
 

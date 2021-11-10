@@ -70,7 +70,9 @@ class PigeonEnv3Joints(gym.Env):
             # can call method unless it's virtual (abstract)
             self.reward_function = self._head_stable_01
 
-        elif reward_code == "head_stable_manual_reposition":
+        elif reward_code == "head_stable_manual_reposition_01" or \
+                reward_code == "head_stable_manual_reposition":
+            self.relative_head_target_location = np.array(self.head.position)
             self.head_target_location = np.array(self.head.position)
             self.head_target_angle = self.head.angle
             self.reward_function = self._head_stable_manual_reposition
@@ -211,7 +213,7 @@ class PigeonEnv3Joints(gym.Env):
         return reward
 
     # ONLY WORKS ON body_speed = 0
-    def _head_stable_manual_reposition(self):
+    def _head_stable_manual_reposition_01(self):
         head_dif_loc = np.linalg.norm(np.array(self.head.position) - self.head_target_location)
         head_dif_ang = abs(self.head.angle - self.head_target_angle)
 
@@ -223,6 +225,14 @@ class PigeonEnv3Joints(gym.Env):
                 reward += 1 - head_dif_ang/ np.pi
 
         return reward
+
+    def _head_stable_manual_reposition(self):
+        # detect whether the target head position is behind the body edge or not
+        if self.head_target_location[0] > self.body.position[0] + float(-BODY_WIDTH):
+            self.head_target_location = np.array(self.body.position) + \
+                self.relative_head_target_location
+
+        return self._head_stable_manual_reposition_01()
 
     def _head_stable_movement_minimizer(self):
         reward = 0

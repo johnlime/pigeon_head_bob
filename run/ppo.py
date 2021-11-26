@@ -1,5 +1,5 @@
-#from gym_env.pigeon_gym import PigeonEnv3Joints
-import gym
+from gym_env.pigeon_gym import PigeonEnv3Joints
+#import gym
 
 import sys
 sys.path.append('src/rlkit_ppo')

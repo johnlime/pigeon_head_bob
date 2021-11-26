@@ -261,7 +261,7 @@ class PigeonEnv3Joints(gym.Env):
         return reward
 
 
-    def _head_stable_manual_reposition(self, max_offset = 10):
+    def _head_stable_manual_reposition(self, max_offset = 100):
         # detect whether the target head position is behind the body edge or not
         if self.head_target_location[0] > self.body.position[0] + float(-BODY_WIDTH):
             self.head_target_location = np.array(self.body.position) + \

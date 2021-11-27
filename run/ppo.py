@@ -15,13 +15,13 @@ from rlkit.torch.networks import FlattenMlp
 from rlkit.torch.ppo.ppo_torch_batch_rl_algorithm import PPOTorchBatchRLAlgorithm
 
 import torch
+import argparse
 
-
-def experiment(variant):
+def experiment(variant, args):
     torch.autograd.set_detect_anomaly(True)
     # pigeon moves at speed of 10
-    expl_env = NormalizedBoxEnv(PigeonEnv3Joints(10))
-    eval_env = NormalizedBoxEnv(PigeonEnv3Joints(10))
+    expl_env = NormalizedBoxEnv(PigeonEnv3Joints(args.body_speed, args.reward_code))
+    eval_env = NormalizedBoxEnv(PigeonEnv3Joints(args.body_speed, args.reward_code))
     obs_dim = expl_env.observation_space.low.size
     action_dim = eval_env.action_space.low.size
 
@@ -76,6 +76,14 @@ def experiment(variant):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--body_speed', type=float, default=10.0,
+                        help='pigeon body speed')
+    parser.add_argument('--reward_code', type=str,
+                        default="head_stable_manual_reposition",
+                        help='specify reward function')
+    args = parser.parse_args()
+
     # noinspection PyTypeChecker
     T = 2048
     max_ep_len = 1000
@@ -102,6 +110,8 @@ if __name__ == "__main__":
             lr=3e-4,
         ),
     )
-    setup_logger('pigeon_3_joints_head_stable_manual_reposition_body_speed_10', variant=variant)
+
+    # setting up argparse params (body speed and reward function)
+    setup_logger('pigeon_3_joints_' + args.reward_code + '_body_speed_' + args.body_speed, variant=variant)
     ptu.set_gpu_mode(True)  # optionally set the GPU (default=False)
-    experiment(variant)
+    experiment(variant, args)

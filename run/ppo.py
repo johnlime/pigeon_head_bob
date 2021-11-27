@@ -20,8 +20,8 @@ import argparse
 def experiment(variant, args):
     torch.autograd.set_detect_anomaly(True)
     # pigeon moves at speed of 10
-    expl_env = NormalizedBoxEnv(PigeonEnv3Joints(args.body_speed, args.reward_code))
-    eval_env = NormalizedBoxEnv(PigeonEnv3Joints(args.body_speed, args.reward_code))
+    expl_env = NormalizedBoxEnv(PigeonEnv3Joints(args.body_speed, args.reward_code, args.max_offset))
+    eval_env = NormalizedBoxEnv(PigeonEnv3Joints(args.body_speed, args.reward_code, args.max_offset))
     obs_dim = expl_env.observation_space.low.size
     action_dim = eval_env.action_space.low.size
 
@@ -82,6 +82,9 @@ if __name__ == "__main__":
     parser.add_argument('--reward_code', type=str,
                         default="head_stable_manual_reposition",
                         help='specify reward function')
+    parser.add_argument('--max_offset', type=float,
+                        default=1000.0,
+                        help='specify max offset for reward function 03+')
     args = parser.parse_args()
 
     # noinspection PyTypeChecker
@@ -112,6 +115,9 @@ if __name__ == "__main__":
     )
 
     # setting up argparse params (body speed and reward function)
-    setup_logger('pigeon_3_joints_' + args.reward_code + '_body_speed_' + args.body_speed, variant=variant)
+    setup_logger('pigeon_3_joints_' + args.reward_code + \
+                 '_body_speed_' + args.body_speed + \
+                 '_max_offset_' + args.max_offset,
+                 variant=variant)
     ptu.set_gpu_mode(True)  # optionally set the GPU (default=False)
     experiment(variant, args)

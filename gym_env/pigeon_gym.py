@@ -23,7 +23,10 @@ TORQUE_WEIGHT = 0.1
 VIEWPORT_SCALE = 6.0
 
 class PigeonEnv3Joints(gym.Env):
-    def __init__(self, body_speed = 0, reward_code = "head_stable_manual_reposition"):
+    def __init__(self,
+                 body_speed = 0,
+                 reward_code = "head_stable_manual_reposition",
+                 max_offset = 1000):
         """
         Action and Observation space
         """
@@ -71,6 +74,8 @@ class PigeonEnv3Joints(gym.Env):
             self.reward_function = self._head_stable_01
 
         elif "head_stable_manual_reposition" in reward_code:
+            self.max_offset = max_offset
+
             self.relative_head_target_location = np.array(self.head.position)
             self.head_target_location = np.array(self.head.position)
             self.head_target_angle = self.head.angle
@@ -243,7 +248,7 @@ class PigeonEnv3Joints(gym.Env):
         return self._head_stable_manual_reposition_01()
 
 
-    def _head_stable_manual_reposition_03(self, max_offset = 1000):
+    def _head_stable_manual_reposition_03(self):
         # detect whether the target head position is behind the body edge or not
         if self.head_target_location[0] > self.body.position[0] + float(-BODY_WIDTH):
             self.head_target_location = np.array(self.body.position) + \
@@ -254,8 +259,8 @@ class PigeonEnv3Joints(gym.Env):
 
         reward = 0
         # threshold reward function with static offset
-        if head_dif_loc < max_offset:
-            reward += 1 - head_dif_loc / max_offset
+        if head_dif_loc < self.max_offset:
+            reward += 1 - head_dif_loc / self.max_offset
 
             if head_dif_ang < np.pi / 6: # 30 deg
                 reward += 1 - head_dif_ang/ np.pi
@@ -263,7 +268,7 @@ class PigeonEnv3Joints(gym.Env):
         return reward
 
 
-    def _head_stable_manual_reposition_04(self, max_offset = 1000):
+    def _head_stable_manual_reposition_04(self):
         # detect whether the target head position is behind the body edge or not
         if self.head_target_location[0] > self.body.position[0] + float(-BODY_WIDTH):
             self.head_target_location = np.array(self.body.position) + \
@@ -274,8 +279,8 @@ class PigeonEnv3Joints(gym.Env):
 
         reward = 0
         # threshold reward function with static offset
-        if head_dif_loc < max_offset:
-            reward += max_offset - head_dif_loc
+        if head_dif_loc < self.max_offset:
+            reward += self.max_offset - head_dif_loc
 
             if head_dif_ang < np.pi / 6: # 30 deg
                 reward += 1 - head_dif_ang/ np.pi

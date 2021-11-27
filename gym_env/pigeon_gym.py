@@ -80,8 +80,10 @@ class PigeonEnv3Joints(gym.Env):
                 self.reward_function = self._head_stable_manual_reposition_02
             elif "03" in reward_code:
                 self.reward_function = self._head_stable_manual_reposition_03
+            elif "04" in reward_code:
+                self.reward_function = self._head_stable_manual_reposition_04
             else:
-                self.reward_function = self._head_stable_manual_reposition
+                self.reward_function = self._head_stable_manual_reposition_03
 
         else:
             raise ValueError("Unknown reward_code")
@@ -241,7 +243,7 @@ class PigeonEnv3Joints(gym.Env):
         return self._head_stable_manual_reposition_01()
 
 
-    def _head_stable_manual_reposition_03(self, max_offset = 10):
+    def _head_stable_manual_reposition_03(self, max_offset = 1000):
         # detect whether the target head position is behind the body edge or not
         if self.head_target_location[0] > self.body.position[0] + float(-BODY_WIDTH):
             self.head_target_location = np.array(self.body.position) + \
@@ -261,7 +263,7 @@ class PigeonEnv3Joints(gym.Env):
         return reward
 
 
-    def _head_stable_manual_reposition(self, max_offset = 100):
+    def _head_stable_manual_reposition_04(self, max_offset = 1000):
         # detect whether the target head position is behind the body edge or not
         if self.head_target_location[0] > self.body.position[0] + float(-BODY_WIDTH):
             self.head_target_location = np.array(self.body.position) + \

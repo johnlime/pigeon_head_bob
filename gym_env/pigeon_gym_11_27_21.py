@@ -40,7 +40,7 @@ class PigeonEnv3Joints(gym.Env):
         # 1-dim head angle;
         # 3x2-dim joint angle and angular velocity;
         # 1-dim x-axis of the body
-        high = np.array([np.inf] * 8).astype(np.float32) # formally 10
+        high = np.array([np.inf] * 10).astype(np.float32)
         self.observation_space = spaces.Box(-high, high)
 
         """
@@ -187,13 +187,13 @@ class PigeonEnv3Joints(gym.Env):
             self.world.DestroyBody(body)
 
     def get_obs(self):
-        # (self.head{relative}, self.joints -> obs) operation
-        obs = np.array(self.head.position) - np.array(self.body.position)
+        # (self.head, self.joints, self.body -> obs) operations
+        obs = np.array(self.head.position)
         obs = np.concatenate((obs, self.head.angle), axis = None)
         for i in range(len(self.joints)):
             obs = np.concatenate((obs, self.joints[i].angle), axis = None)
             obs = np.concatenate((obs, self.joints[i].speed), axis = None)
-        #obs = np.concatenate((obs, self.body.position[0]), axis = None)
+        obs = np.concatenate((obs, self.body.position[0]), axis = None)
 
         obs = np.float32(obs)
         assert self.observation_space.contains(obs)

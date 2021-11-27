@@ -31,7 +31,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--policy_file', type=str,
                         help='path to the snapshot file')
-    parser.add_argument('--body_speed', type=float, default=0.0,
+    parser.add_argument('--body_speed', type=float, default=10.0,
                         help='pigeon body speed')
     parser.add_argument('--reward_code', type=str,
                         default="head_stable_manual_reposition",

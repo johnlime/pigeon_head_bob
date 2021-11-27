@@ -77,13 +77,13 @@ def experiment(variant, args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--body_speed', type=float, default=10.0,
+    parser.add_argument('--body_speed', type=float, default=10,
                         help='pigeon body speed')
     parser.add_argument('--reward_code', type=str,
                         default="head_stable_manual_reposition",
                         help='specify reward function')
     parser.add_argument('--max_offset', type=float,
-                        default=1000.0,
+                        default=1000,
                         help='specify max offset for reward function 03+')
     args = parser.parse_args()
 
@@ -116,8 +116,8 @@ if __name__ == "__main__":
 
     # setting up argparse params (body speed and reward function)
     setup_logger('pigeon_3_joints_' + args.reward_code + \
-                 '_body_speed_' + args.body_speed + \
-                 '_max_offset_' + args.max_offset,
+                 '_body_speed_' + str(args.body_speed) + \
+                 '_max_offset_' + str(args.max_offset),
                  variant=variant)
     ptu.set_gpu_mode(True)  # optionally set the GPU (default=False)
     experiment(variant, args)

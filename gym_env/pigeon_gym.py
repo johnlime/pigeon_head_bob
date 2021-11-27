@@ -40,7 +40,7 @@ class PigeonEnv3Joints(gym.Env):
         # 1-dim head angle;
         # 3x2-dim joint angle and angular velocity;
         # 1-dim x-axis of the body
-        high = np.array([np.inf] * 8).astype(np.float32) # formally 10
+        high = np.array([np.inf] * 9).astype(np.float32) # formally 10
         self.observation_space = spaces.Box(-high, high)
 
         """

@@ -99,7 +99,7 @@ if __name__ == "__main__":
         layer_size=64,
         replay_buffer_size=T,
         algorithm_kwargs=dict(
-            num_iter=int(1e6 // T),
+            num_iter=int(2 * 1e6 // T),
             num_eval_steps_per_epoch=max_ep_len,
             num_trains_per_train_loop=T // minibatch_size * epochs,
             num_expl_steps_per_train_loop=T,

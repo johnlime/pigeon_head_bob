@@ -1,7 +1,6 @@
 from Box2D import *
 import gym
 from gym import spaces
-from gym.envs.classic_control import rendering
 
 from math import sin, pi, sqrt
 import numpy as np
@@ -318,6 +317,7 @@ class PigeonEnv3Joints(gym.Env):
         return obs, reward, done, info
 
     def render(self, mode = "human"):
+        from gym.envs.classic_control import rendering
         if self.viewer is None:
             self.viewer = rendering.Viewer(500, 500)
         background = rendering.FilledPolygon(

@@ -1,4 +1,6 @@
 from gym_env.pigeon_gym import PigeonEnv3Joints
+import sys
+sys.path.append('src/rlkit_ppo')
 
 import rlkit.torch.pytorch_util as ptu
 from rlkit.data_management.env_replay_buffer import EnvReplayBuffer

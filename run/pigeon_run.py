@@ -1,4 +1,4 @@
-from gym_env.pigeon_gym import PigeonEnv3Joints
+from gym_env.pigeon_gym_11_27_28 import PigeonEnv3Joints
 import argparse
 import torch
 import numpy as np
@@ -42,7 +42,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.policy_file is None:
-        run_rand_policy(args.body_speed, args.reward_code)
+        run_rand_policy(args.body_speed, args.reward_code, args.max_offset)
 
     else:
         policy = torch.load(args.policy_file,

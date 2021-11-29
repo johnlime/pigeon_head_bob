@@ -91,7 +91,7 @@ if __name__ == "__main__":
                         default="head_stable_manual_reposition",
                         help='specify reward function')
     parser.add_argument('--max_offset', type=float,
-                        default=1000,
+                        default=10,
                         help='specify max offset for reward function 03+')
     args = parser.parse_args()
 
@@ -102,7 +102,7 @@ if __name__ == "__main__":
         layer_size=256,
         replay_buffer_size=int(1E6),
         algorithm_kwargs=dict(
-            num_epochs=1000, #3000,
+            num_epochs=500, #3000,
             num_eval_steps_per_epoch=5000,
             num_trains_per_train_loop=1000,
             num_expl_steps_per_train_loop=1000,

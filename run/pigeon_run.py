@@ -37,7 +37,7 @@ if __name__ == "__main__":
                         default="head_stable_manual_reposition",
                         help='specify reward function')
     parser.add_argument('--max_offset', type=float,
-                        default=1000.0,
+                        default=10.0,
                         help='specify max offset for reward function 03+')
     args = parser.parse_args()
 

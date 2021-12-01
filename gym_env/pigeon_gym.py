@@ -16,9 +16,9 @@ LIMB_HEIGHT = 2
 HEAD_WIDTH = 3
 
 # control variables/macros
-MAX_JOINT_TORQUE = 10.0 ** 6
-MAX_JOINT_SPEED = 10
-TORQUE_WEIGHT = 0.1
+MAX_JOINT_TORQUE = 2 * 10.0 ** 5 # 10.0 ** 6
+MAX_JOINT_SPEED = 10.0 ** 2 # 10.0
+VELOCITY_WEIGHT = 1.0 # 0.1
 
 VIEWPORT_SCALE = 6.0
 
@@ -143,7 +143,7 @@ class PigeonEnv3Joints(gym.Env):
                 lowerAngle = -0.5 * b2_pi, # -90 degrees
                 upperAngle = 0.5 * b2_pi,  #  90 degrees
                 enableLimit = True,
-                maxMotorTorque = MAX_JOINT_TORQUE * (TORQUE_WEIGHT ** i),
+                maxMotorTorque = MAX_JOINT_TORQUE,
                 motorSpeed = 0.0,
                 enableMotor = True,
             )
@@ -171,7 +171,7 @@ class PigeonEnv3Joints(gym.Env):
             lowerAngle = -0.5 * b2_pi, # -90 degrees
             upperAngle = 0.5 * b2_pi,  #  90 degrees
             enableLimit = True,
-            maxMotorTorque = MAX_JOINT_TORQUE * (TORQUE_WEIGHT ** 2),
+            maxMotorTorque = MAX_JOINT_TORQUE,
             motorSpeed = 0.0,
             enableMotor = True,
         )
@@ -304,10 +304,9 @@ class PigeonEnv3Joints(gym.Env):
         # MOTOR CONTROL
         for i in range(len(self.joints)):
             # Copied from bipedal_walker
-            self.joints[i].motorSpeed = float(MAX_JOINT_SPEED * np.sign(action[i]))
+            self.joints[i].motorSpeed = float(MAX_JOINT_SPEED * (VELOCITY_WEIGHT ** i) * np.sign(action[i]))
             self.joints[i].maxMotorTorque = float(
-                MAX_JOINT_TORQUE * (TORQUE_WEIGHT ** i)
-                    * np.clip(np.abs(action[i]), 0, 1)
+                MAX_JOINT_TORQUE * np.clip(np.abs(action[i]), 0, 1)
             )
 
         reward = self.reward_function()

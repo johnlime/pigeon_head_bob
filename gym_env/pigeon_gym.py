@@ -320,49 +320,60 @@ class PigeonEnv3Joints(gym.Env):
         from gym.envs.classic_control import rendering
         if self.viewer is None:
             self.viewer = rendering.Viewer(500, 500)
-        background = rendering.FilledPolygon(
-            [
-                (0, 0),
-                (500, 0),
-                (500, 500),
-                (0, 500)
-            ]
-        )
-        background.set_color(1.0, 1.0, 1.0)
-        self.viewer.add_geom(background)
 
-        # Set ORIGIN POINT relative to camera
-        camera_trans = b2Vec2(-250, -200) \
-        + VIEWPORT_SCALE * self.bodyRef[0].position # camera moves with body
+            # Set ORIGIN POINT relative to camera
+            self.camera_trans = b2Vec2(-250, -200) \
+            + VIEWPORT_SCALE * self.bodyRef[0].position # camera moves with body
 
-        # visualize max_offset
-        target_area = rendering.make_circle(radius=self.max_offset, res=30, filled=True)
-        target_translate = rendering.Transform(
-            translation = VIEWPORT_SCALE * self.head_target_location - camera_trans,
-            rotation = 0.0,
-            scale = VIEWPORT_SCALE * np.ones(2)
-        )
-        target_area.add_attr(target_translate)
-        target_area.set_color(0.0, 1.0, 0.0)
-        self.viewer.add_geom(target_area)
-
-        for body in self.bodyRef:
-            polygon = rendering.FilledPolygon(
-                body.fixtures[0].shape.vertices
-            )
-            rotate = rendering.Transform(
-                translation = (0.0, 0.0),
-                rotation = body.angle,
-            )
-            translate = rendering.Transform(
-                translation = VIEWPORT_SCALE * body.position - camera_trans,
+            # init visualize max_offset
+            self.render_target_area = rendering.make_circle(radius=self.max_offset, res=30, filled=True)
+            self.target_translate = rendering.Transform(
+                translation = VIEWPORT_SCALE * self.head_target_location - self.camera_trans,
                 rotation = 0.0,
                 scale = VIEWPORT_SCALE * np.ones(2)
             )
-            polygon.set_color(1.0, 0.0, 0.0)
-            polygon.add_attr(rotate)
-            polygon.add_attr(translate)
-            self.viewer.add_geom(polygon)
+            self.render_target_area.add_attr(self.target_translate)
+            self.render_target_area.set_color(0.0, 1.0, 0.0)
+            self.viewer.add_geom(self.render_target_area)
+
+            # init translation and rotation for each limb
+            self.render_polygon_list = []
+            self.render_polygon_rotate_list = []
+            self.render_polygon_translate_list = []
+            for body in self.bodyRef:
+                polygon = rendering.FilledPolygon(
+                    body.fixtures[0].shape.vertices
+                )
+                rotate = rendering.Transform(
+                    translation = (0.0, 0.0),
+                    rotation = body.angle,
+                )
+                translate = rendering.Transform(
+                    translation = VIEWPORT_SCALE * body.position - self.camera_trans,
+                    rotation = 0.0,
+                    scale = VIEWPORT_SCALE * np.ones(2)
+                )
+                polygon.set_color(1.0, 0.0, 0.0)
+                polygon.add_attr(rotate)
+                polygon.add_attr(translate)
+                self.render_polygon_list.append(polygon)
+                self.render_polygon_rotate_list.append(rotate)
+                self.render_polygon_translate_list.append(translate)
+                self.viewer.add_geom(polygon)
+
+        # Update ORIGIN POINT relative to camera
+        self.camera_trans = b2Vec2(-250, -200) \
+        + VIEWPORT_SCALE * self.bodyRef[0].position # camera moves with body
+
+        # update max_offset shape translation
+        new_target_translate = VIEWPORT_SCALE * self.head_target_location - self.camera_trans
+        self.target_translate.set_translation(new_target_translate[0], new_target_translate[1])
+
+        # update body rotation and translation
+        for i, body in enumerate(self.bodyRef):
+            self.render_polygon_rotate_list[i].set_rotation(body.angle)
+            new_body_translate = VIEWPORT_SCALE * body.position - self.camera_trans
+            self.render_polygon_translate_list[i].set_translation(new_body_translate[0], new_body_translate[1])
 
         return self.viewer.render(return_rgb_array = mode == "rgb_array")
 

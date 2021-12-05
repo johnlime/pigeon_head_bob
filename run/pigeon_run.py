@@ -31,13 +31,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--policy_file', type=str,
                         help='path to the snapshot file')
-    parser.add_argument('--body_speed', type=float, default=10.0,
+    parser.add_argument('--body_speed', type=float, default=1.0,
                         help='pigeon body speed')
     parser.add_argument('--reward_code', type=str,
                         default="head_stable_manual_reposition",
                         help='specify reward function')
     parser.add_argument('--max_offset', type=float,
-                        default=10.0,
+                        default=1.0,
                         help='specify max offset for reward function 03+')
     args = parser.parse_args()
 

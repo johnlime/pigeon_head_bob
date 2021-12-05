@@ -26,7 +26,7 @@ class PigeonEnv3Joints(gym.Env):
     def __init__(self,
                  body_speed = 0,
                  reward_code = "head_stable_manual_reposition",
-                 max_offset = 0.5):
+                 max_offset = 10):
         """
         Action and Observation space
         """
@@ -65,13 +65,30 @@ class PigeonEnv3Joints(gym.Env):
         """
         Assigning a Reward Function
         """
-        if "head_stable_manual_reposition" in reward_code:
+        if reward_code == "head_stable_01":
+            # justified since this can be regarded as a constructor
+            self.head_prev_pos = np.array([0.0, 0.0])       # head tracking
+            self.head_prev_ang = 0                          # head tracking
+
+            # can call method unless it's virtual (abstract)
+            self.reward_function = self._head_stable_01
+
+        elif "head_stable_manual_reposition" in reward_code:
             self.max_offset = max_offset
 
             self.relative_head_target_location = np.array(self.head.position)
             self.head_target_location = np.array(self.head.position)
             self.head_target_angle = self.head.angle
-            self.reward_function = self._head_stable_manual_reposition_03
+            if "01" in reward_code:
+                self.reward_function = self._head_stable_manual_reposition_01
+            elif "02" in reward_code:
+                self.reward_function = self._head_stable_manual_reposition_02
+            elif "03" in reward_code:
+                self.reward_function = self._head_stable_manual_reposition_03
+            elif "04" in reward_code:
+                self.reward_function = self._head_stable_manual_reposition_04
+            else:
+                self.reward_function = self._head_stable_manual_reposition_03
 
         else:
             raise ValueError("Unknown reward_code")
@@ -188,7 +205,50 @@ class PigeonEnv3Joints(gym.Env):
         return self.get_obs()
 
     # modular reward functions
-    def _head_stable_manual_reposition(self):
+    def _head_stable_01(self):
+        head_dif_loc = np.linalg.norm(np.array(self.head.position) - self.head_prev_pos)
+        head_dif_ang = abs(self.head.angle - self.head_prev_ang)
+
+        reward = 0
+        #threshold function
+        if head_dif_loc < 0.5:
+            reward += 1
+
+            if head_dif_ang < np.pi / 6: # 30 deg
+                reward += 1
+
+        else:
+            reward += 0
+
+        # head tracking
+        self.head_prev_pos = np.array(self.head.position)
+        self.head_prev_ang = self.head.angle
+        return reward
+
+    # ONLY WORKS ON body_speed = 0
+    def _head_stable_manual_reposition_01(self):
+        head_dif_loc = np.linalg.norm(np.array(self.head.position) - self.head_target_location)
+        head_dif_ang = abs(self.head.angle - self.head_target_angle)
+
+        reward = 0
+        if head_dif_loc < 0.5:
+            reward += 1 - head_dif_loc / 0.5
+
+            if head_dif_ang < np.pi / 6: # 30 deg
+                reward += 1 - head_dif_ang/ np.pi
+
+        return reward
+
+    def _head_stable_manual_reposition_02(self):
+        # detect whether the target head position is behind the body edge or not
+        if self.head_target_location[0] > self.body.position[0] + float(-BODY_WIDTH):
+            self.head_target_location = np.array(self.body.position) + \
+                self.relative_head_target_location
+
+        return self._head_stable_manual_reposition_01()
+
+
+    def _head_stable_manual_reposition_03(self):
         # detect whether the target head position is behind the body edge or not
         if self.head_target_location[0] > self.body.position[0] + float(-BODY_WIDTH):
             self.head_target_location = np.array(self.body.position) + \
@@ -200,10 +260,30 @@ class PigeonEnv3Joints(gym.Env):
         reward = 0
         # threshold reward function with static offset
         if head_dif_loc < self.max_offset:
-            reward = (self.max_offset - head_dif_loc) ** 2
+            reward += 1 - head_dif_loc / self.max_offset
 
             if head_dif_ang < np.pi / 6: # 30 deg
-                reward *= 1 - head_dif_ang/ np.pi
+                reward += 1 - head_dif_ang/ np.pi
+
+        return reward
+
+
+    def _head_stable_manual_reposition_04(self):
+        # detect whether the target head position is behind the body edge or not
+        if self.head_target_location[0] > self.body.position[0] + float(-BODY_WIDTH):
+            self.head_target_location = np.array(self.body.position) + \
+                self.relative_head_target_location
+
+        head_dif_loc = np.linalg.norm(np.array(self.head.position) - self.head_target_location)
+        head_dif_ang = abs(self.head.angle - self.head_target_angle)
+
+        reward = 0
+        # threshold reward function with static offset
+        if head_dif_loc < self.max_offset:
+            reward += self.max_offset - head_dif_loc
+
+            if head_dif_ang < np.pi / 6: # 30 deg
+                reward += 1 - head_dif_ang/ np.pi
 
         return reward
 

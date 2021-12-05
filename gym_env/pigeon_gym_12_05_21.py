@@ -40,8 +40,7 @@ class PigeonEnv3Joints(gym.Env):
         # 1-dim head angle;
         # 3x2-dim joint angle and angular velocity;
         # 1-dim x-axis of the body
-        # [NEW] 2-dim target head location
-        high = np.array([np.inf] * 12).astype(np.float32) # formally 10
+        high = np.array([np.inf] * 10).astype(np.float32) # formally 10
         self.observation_space = spaces.Box(-high, high)
 
         """
@@ -69,7 +68,7 @@ class PigeonEnv3Joints(gym.Env):
         if "head_stable_manual_reposition" in reward_code:
             self.max_offset = max_offset
 
-            self.relative_repositioned_head_target_location = np.array(self.head.position)
+            self.relative_head_target_location = np.array(self.head.position)
             self.head_target_location = np.array(self.head.position)
             self.head_target_angle = self.head.angle
             self.reward_function = self._head_stable_manual_reposition_03
@@ -179,10 +178,6 @@ class PigeonEnv3Joints(gym.Env):
             obs = np.concatenate((obs, self.joints[i].speed), axis = None)
         obs = np.concatenate((obs, self.body.position[0]), axis = None)
 
-        # complement a target position
-        obs = np.concatenate((obs, self.head_target_location - np.array(self.body.position)),
-                              axis = None)
-
         obs = np.float32(obs)
         assert self.observation_space.contains(obs)
         return obs
@@ -197,7 +192,7 @@ class PigeonEnv3Joints(gym.Env):
         # detect whether the target head position is behind the body edge or not
         if self.head_target_location[0] > self.body.position[0] + float(-BODY_WIDTH):
             self.head_target_location = np.array(self.body.position) + \
-                self.relative_repositioned_head_target_location
+                self.relative_head_target_location
 
         head_dif_loc = np.linalg.norm(np.array(self.head.position) - self.head_target_location)
         head_dif_ang = abs(self.head.angle - self.head_target_angle)

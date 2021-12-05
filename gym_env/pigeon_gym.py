@@ -72,7 +72,7 @@ class PigeonEnv3Joints(gym.Env):
             self.relative_repositioned_head_target_location = np.array(self.head.position)
             self.head_target_location = np.array(self.head.position)
             self.head_target_angle = self.head.angle
-            self.reward_function = self._head_stable_manual_reposition_03
+            self.reward_function = self._head_stable_manual_reposition
 
         else:
             raise ValueError("Unknown reward_code")

@@ -205,10 +205,10 @@ class PigeonEnv3Joints(gym.Env):
         reward = 0
         # threshold reward function with static offset
         if head_dif_loc < self.max_offset:
-            reward = (self.max_offset - head_dif_loc) ** 2
+            reward += (self.max_offset - head_dif_loc) ** 2
 
             if head_dif_ang < np.pi / 6: # 30 deg
-                reward *= 1 - head_dif_ang/ np.pi
+                reward += 1 - head_dif_ang/ np.pi
 
         return reward
 

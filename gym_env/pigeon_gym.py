@@ -208,7 +208,7 @@ class PigeonEnv3Joints(gym.Env):
             reward += (self.max_offset - head_dif_loc) ** 2
 
             if head_dif_ang < np.pi / 6: # 30 deg
-                reward += 1 - head_dif_ang/ np.pi
+                reward += (1 - head_dif_ang/ np.pi) ** 2
 
         return reward
 

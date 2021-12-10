@@ -16,9 +16,11 @@ LIMB_HEIGHT = 2
 HEAD_WIDTH = 3
 
 # control variables/macros
-MAX_JOINT_TORQUE = 80 # 2 * 10.0 ** 5; 10.0 ** 6
-MAX_JOINT_SPEED = 10  # 10.0 ** 2; 10.0
-VELOCITY_WEIGHT = 0.8
+MAX_JOINT_TORQUE = 2 * 10 ** 2
+MAX_JOINT_SPEED = 100
+VELOCITY_WEIGHT = 1.0
+LIMB_DENSITY = 0.1 ** 3
+LIMB_FRICTION = 0.6
 
 VIEWPORT_SCALE = 6.0
 
@@ -111,8 +113,9 @@ class PigeonEnv3Joints(gym.Env):
 
             tmp_limb = self.world.CreateDynamicBody(
                 position = (current_center[0], current_center[1]),
-                fixtures = b2FixtureDef(density = 2.0,
-                                        friction = 0.6,
+                fixtures = b2FixtureDef(density = LIMB_DENSITY,
+                                        friction = LIMB_FRICTION,
+                                        restitution = 0.0,
                                         shape = b2PolygonShape(
                                             box = (LIMB_WIDTH, LIMB_HEIGHT)),
                                         ),
@@ -140,8 +143,9 @@ class PigeonEnv3Joints(gym.Env):
         current_anchor += offset * 2
         self.head = self.world.CreateDynamicBody(
             position = (current_center[0] - HEAD_WIDTH, current_center[1]),
-            fixtures = b2FixtureDef(density = 2.0,
-                                    friction = 0.6,
+            fixtures = b2FixtureDef(density = LIMB_DENSITY,
+                                    friction = LIMB_FRICTION,
+                                    restitution = 0.0,
                                     shape = b2PolygonShape(
                                         box = (HEAD_WIDTH, LIMB_HEIGHT)),
                                     ),
@@ -208,7 +212,7 @@ class PigeonEnv3Joints(gym.Env):
             reward += (self.max_offset - head_dif_loc) ** 2
 
             if head_dif_ang < np.pi / 6: # 30 deg
-                reward += (1 - head_dif_ang/ np.pi) ** 2
+                reward += 1 - head_dif_ang/ np.pi
 
         return reward
 

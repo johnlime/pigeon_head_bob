@@ -16,11 +16,11 @@ LIMB_HEIGHT = 2
 HEAD_WIDTH = 3
 
 # control variables/macros
-MAX_JOINT_TORQUE = 2 * 10 ** 2
-MAX_JOINT_SPEED = 100
+MAX_JOINT_TORQUE = 10 ** 2
+MAX_JOINT_SPEED = 10
 VELOCITY_WEIGHT = 1.0
 LIMB_DENSITY = 0.1 ** 3
-LIMB_FRICTION = 0.6
+LIMB_FRICTION = 3
 
 VIEWPORT_SCALE = 6.0
 
@@ -79,10 +79,10 @@ class PigeonEnv3Joints(gym.Env):
         else:
             raise ValueError("Unknown reward_code")
 
-    """
-    Box2D Pigeon Model
-    """
     def pigeon_model(self):
+        """
+        Box2D Pigeon Model
+        """
         # params
         body_anchor = np.array([float(-BODY_WIDTH), float(BODY_HEIGHT)])
         limb_width_cos = LIMB_WIDTH / sqrt(2)
@@ -209,10 +209,13 @@ class PigeonEnv3Joints(gym.Env):
         reward = 0
         # threshold reward function with static offset
         if head_dif_loc < self.max_offset:
-            reward += (self.max_offset - head_dif_loc) ** 2
+            reward += 1 - head_dif_loc/self.max_offset
 
             if head_dif_ang < np.pi / 6: # 30 deg
                 reward += 1 - head_dif_ang/ np.pi
+
+        # if head_dif_loc < self.max_offset:
+        #     reward += 1 - head_dif_ang/ np.pi
 
         return reward
 

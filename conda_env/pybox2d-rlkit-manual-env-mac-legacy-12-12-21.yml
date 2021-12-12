@@ -6,8 +6,8 @@ channels:
 dependencies:
   - blas=1.0=mkl
   - bzip2=1.0.8=h0d85af4_4
-  - ca-certificates=2021.10.8=h033912b_0
-  - certifi=2021.5.30=py36h79c6626_0
+  - ca-certificates=2021.10.26=hecd8cb5_2
+  - certifi=2021.5.30=py36hecd8cb5_0
   - cloudpickle=1.6.0=py_0
   - cython=0.29.24=py36h23ab428_0
   - dataclasses=0.8=pyh4f3eec9_6
@@ -17,6 +17,7 @@ dependencies:
   - gettext=0.19.8.1=h7937167_1005
   - gmp=6.2.1=h2e338ed_0
   - gnutls=3.6.13=h756fd2b_1
+  - gym=0.19.0=py36h5954240_0
   - intel-openmp=2021.3.0=hecd8cb5_3375
   - lame=3.100=h35c211d_1001
   - libblas=3.9.0=1_h508aa58_netlib
@@ -37,7 +38,7 @@ dependencies:
   - nettle=3.6=hedd7734_0
   - numpy=1.19.5=py36h08b5fde_2
   - openh264=2.1.1=hfd3ada9_0
-  - openssl=1.1.1l=h0d85af4_0
+  - openssl=1.1.1l=h9ed2024_0
   - pip=21.2.2=py36hecd8cb5_0
   - pybox2d=2.3.10=py36hefe7e0e_1
   - pyglet=1.5.16=py36h79c6626_0
@@ -57,13 +58,10 @@ dependencies:
   - zlib=1.2.11=h1de35cc_3
   - pip:
     - charset-normalizer==2.0.7
-    - gym==0.21.0
     - idna==3.3
-    - importlib-metadata==4.8.2
     - pygame==2.0.1
     - python-dateutil==2.8.2
     - requests==2.26.0
     - tqdm==4.62.3
     - urllib3==1.26.7
-    - zipp==3.6.0
-prefix: /Users/johnlime/anaconda3/envs/pybox2d-rlkit-manual
+prefix: /Users/mojavelime/anaconda3/envs/pybox2d-rlkit-manual

@@ -24,6 +24,9 @@ LIMB_FRICTION = 3
 
 VIEWPORT_SCALE = 6.0
 
+HEAD_OFFSET_X = 10
+HEAD_OFFSET_Y = 10
+
 class PigeonEnv3Joints(gym.Env):
     def __init__(self,
                  body_speed = 0,
@@ -71,8 +74,8 @@ class PigeonEnv3Joints(gym.Env):
         if "head_stable_manual_reposition" in reward_code:
             self.max_offset = max_offset
 
-            self.relative_repositioned_head_target_location = np.array(self.head.position)
-            self.head_target_location = np.array(self.head.position)
+            self.relative_repositioned_head_target_location = np.array(self.head.position) - np.array([0, HEAD_OFFSET_Y])
+            self.head_target_location = self.relative_repositioned_head_target_location + np.array(self.body.position)
             self.head_target_angle = self.head.angle
             self.reward_function = self._head_stable_manual_reposition
 
@@ -199,7 +202,7 @@ class PigeonEnv3Joints(gym.Env):
     # modular reward functions
     def _head_stable_manual_reposition(self):
         # detect whether the target head position is behind the body edge or not
-        if self.head_target_location[0] > self.body.position[0] + float(-BODY_WIDTH):
+        if self.head_target_location[0] > self.body.position[0] - float(BODY_WIDTH + HEAD_OFFSET_X):
             self.head_target_location = np.array(self.body.position) + \
                 self.relative_repositioned_head_target_location
 

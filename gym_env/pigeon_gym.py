@@ -18,7 +18,7 @@ HEAD_WIDTH = 3
 ANGLE_FREEDOM = 0.70 #0.5
 
 # control variables/macros
-MAX_JOINT_TORQUE = 10 ** 2
+MAX_JOINT_TORQUE = 70 #10 ** 2
 MAX_JOINT_SPEED = 10
 VELOCITY_WEIGHT = 0.9
 LIMB_DENSITY = 0.1 ** 3
@@ -28,7 +28,7 @@ VIEWPORT_SCALE = 6.0
 FPS = 60
 
 HEAD_OFFSET_X = 10
-HEAD_OFFSET_Y = 10
+HEAD_OFFSET_Y = 5
 
 class PigeonEnv3Joints(gym.Env):
     metadata = {"render.modes": ["human", "rgb_array"], "video.frames_per_second": FPS}

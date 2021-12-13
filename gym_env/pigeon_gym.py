@@ -58,7 +58,7 @@ class PigeonEnv3Joints(gym.Env):
         self.head = None
         self.bodyRef = [] # for destruction
         self.body_speed = body_speed
-        self.pigeon_model()
+        self._pigeon_model()
 
         """
         Box2D Simulation Params
@@ -82,10 +82,10 @@ class PigeonEnv3Joints(gym.Env):
         else:
             raise ValueError("Unknown reward_code")
 
-    def pigeon_model(self):
-        """
-        Box2D Pigeon Model
-        """
+    """
+    Box2D Pigeon Model
+    """
+    def _pigeon_model(self):
         # params
         body_anchor = np.array([float(-BODY_WIDTH), float(BODY_HEIGHT)])
         limb_width_cos = LIMB_WIDTH / sqrt(2)
@@ -172,12 +172,12 @@ class PigeonEnv3Joints(gym.Env):
         self.head_prev_pos = np.array(self.head.position)
         self.head_prev_ang = self.head.angle
 
-    def destroy(self):
+    def _destroy(self):
         for body in self.bodyRef:
             # all associated joints are destroyed implicitly
             self.world.DestroyBody(body)
 
-    def get_obs(self):
+    def _get_obs(self):
         # (self.head{relative}, self.joints -> obs) operation
         obs = np.array(self.head.position) - np.array(self.body.position)
         obs = np.concatenate((obs, self.head.angle), axis = None)
@@ -195,9 +195,9 @@ class PigeonEnv3Joints(gym.Env):
         return obs
 
     def reset(self):
-        self.destroy()
-        self.pigeon_model()
-        return self.get_obs()
+        self._destroy()
+        self._pigeon_model()
+        return self._get_obs()
 
     # modular reward functions
     def _head_stable_manual_reposition(self):
@@ -234,7 +234,7 @@ class PigeonEnv3Joints(gym.Env):
         # Copied from bipedal_walker
         # self.world.Step(1.0 / 50, 6 * 30, 2 * 30)
         self.world.Step(1.0 / 50, self.vel_iters, self.pos_iters)
-        obs = self.get_obs()
+        obs = self._get_obs()
 
         # MOTOR CONTROL
         for i in range(len(self.joints)):
@@ -312,8 +312,8 @@ class PigeonEnv3Joints(gym.Env):
         return self.viewer.render(return_rgb_array = mode == "rgb_array")
 
     def close(self):
-        self.destroy()
-        self.world = None
+        # self._destroy()
+        # self.world = None
 
         if self.viewer:
             self.viewer.close()

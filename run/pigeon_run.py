@@ -22,8 +22,12 @@ def run_trained_policy(policy, body_speed, reward_code,
     print(video_path)
 
     if video_path is not None:
+        # DOESN'T WORK....
         from gym import wrappers
         env = wrappers.RecordVideo(env, video_path)
+        # env = wrappers.Monitor(env, video_path,
+        #                        video_callable = lambda episode_id: True,
+        #                        force = True)
 
     observation = env.reset()
     for t in range(1000):

@@ -15,10 +15,12 @@ LIMB_HEIGHT = 2
 
 HEAD_WIDTH = 3
 
+ANGLE_FREEDOM = 0.70 #0.5
+
 # control variables/macros
 MAX_JOINT_TORQUE = 10 ** 2
 MAX_JOINT_SPEED = 10
-VELOCITY_WEIGHT = 1.0
+VELOCITY_WEIGHT = 0.9
 LIMB_DENSITY = 0.1 ** 3
 LIMB_FRICTION = 3
 
@@ -133,8 +135,8 @@ class PigeonEnv3Joints(gym.Env):
                 bodyA = prev_limb_ref,
                 bodyB = tmp_limb,
                 anchor = current_anchor,
-                lowerAngle = -0.5 * b2_pi, # -90 degrees
-                upperAngle = 0.5 * b2_pi,  #  90 degrees
+                lowerAngle = -ANGLE_FREEDOM * b2_pi, # -90 degrees
+                upperAngle = ANGLE_FREEDOM * b2_pi,  #  90 degrees
                 enableLimit = True,
                 maxMotorTorque = MAX_JOINT_TORQUE,
                 motorSpeed = 0.0,
@@ -162,8 +164,8 @@ class PigeonEnv3Joints(gym.Env):
             bodyA = prev_limb_ref,
             bodyB = self.head,
             anchor = current_anchor,
-            lowerAngle = -0.5 * b2_pi, # -90 degrees
-            upperAngle = 0.5 * b2_pi,  #  90 degrees
+            lowerAngle = -ANGLE_FREEDOM * b2_pi, # -90 degrees
+            upperAngle = ANGLE_FREEDOM * b2_pi,  #  90 degrees
             enableLimit = True,
             maxMotorTorque = MAX_JOINT_TORQUE,
             motorSpeed = 0.0,

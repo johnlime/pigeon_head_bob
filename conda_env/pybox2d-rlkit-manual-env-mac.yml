@@ -11,7 +11,6 @@ dependencies:
   - cloudpickle=1.6.0=py_0
   - cython=0.29.24=py36h23ab428_0
   - dataclasses=0.8=pyh4f3eec9_6
-  - ffmpeg=4.3.2=h4dad6da_0
   - freetype=2.10.4=h4cff582_1
   - future=0.18.2=py36h79c6626_3
   - gettext=0.19.8.1=h7937167_1005
@@ -57,6 +56,7 @@ dependencies:
   - zlib=1.2.11=h1de35cc_3
   - pip:
     - charset-normalizer==2.0.7
+    - ffmpeg==1.4
     - gym==0.21.0
     - idna==3.3
     - importlib-metadata==4.8.2

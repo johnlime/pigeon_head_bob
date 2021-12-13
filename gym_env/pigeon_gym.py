@@ -23,11 +23,14 @@ LIMB_DENSITY = 0.1 ** 3
 LIMB_FRICTION = 3
 
 VIEWPORT_SCALE = 6.0
+FPS = 60
 
 HEAD_OFFSET_X = 10
 HEAD_OFFSET_Y = 10
 
 class PigeonEnv3Joints(gym.Env):
+    metadata = {"render.modes": ["human", "rgb_array"], "video.frames_per_second": FPS}
+
     def __init__(self,
                  body_speed = 0,
                  reward_code = "head_stable_manual_reposition",
@@ -63,7 +66,7 @@ class PigeonEnv3Joints(gym.Env):
         """
         Box2D Simulation Params
         """
-        self.timeStep = 1.0 / 60
+        self.timeStep = 1.0 / FPS
         self.vel_iters, self.pos_iters = 10, 10
 
         self.viewer = None

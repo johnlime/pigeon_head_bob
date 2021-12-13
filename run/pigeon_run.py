@@ -19,12 +19,11 @@ def run_rand_policy(body_speed, reward_code, max_offset):
 def run_trained_policy(policy, body_speed, reward_code,
                        max_offset, video_path = None):
     env = PigeonEnv3Joints(body_speed, reward_code, max_offset)
-    print(video_path)
 
     if video_path is not None:
-        # DOESN'T WORK....
         from gym import wrappers
         env = wrappers.RecordVideo(env, video_path)
+        # Possible alternate method (not tested)
         # env = wrappers.Monitor(env, video_path,
         #                        video_callable = lambda episode_id: True,
         #                        force = True)

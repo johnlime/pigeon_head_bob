@@ -326,5 +326,112 @@ class PigeonEnv3Joints(gym.Env):
 
 
 class PigeonEnv3JointsHeadstart(PigeonEnv3Joints):
-    def __init__(self):
-        super().__init__()
+    def _pigeon_model(self):
+        # params
+        body_anchor = np.array([float(-BODY_WIDTH), float(BODY_HEIGHT)])
+        limb_width_cos = LIMB_WIDTH / sqrt(2)
+
+        self.bodyRef = []
+        # body definition
+        self.body = self.world.CreateKinematicBody(
+            position = (0, 0),
+            shapes = b2PolygonShape(box = (BODY_WIDTH, BODY_HEIGHT)), # x2 in direct shapes def
+            linearVelocity = (-self.body_speed, 0),
+            angularVelocity = 0,
+            )
+        self.bodyRef.append(self.body)
+
+        # neck as limbs + joints definition
+        self.joints = []
+        current_center = deepcopy(body_anchor)
+        current_anchor = deepcopy(body_anchor)
+        offset = np.array([-limb_width_cos, limb_width_cos])
+        prev_limb_ref = self.body
+        for i in range(2):
+            if i == 0:
+                current_center += offset
+
+            else:
+                current_center += offset * 2
+                current_anchor += offset * 2
+
+            tmp_limb = self.world.CreateDynamicBody(
+                position = (current_center[0], current_center[1]),
+                fixtures = b2FixtureDef(density = LIMB_DENSITY,
+                                        friction = LIMB_FRICTION,
+                                        restitution = 0.0,
+                                        shape = b2PolygonShape(
+                                            box = (LIMB_WIDTH, LIMB_HEIGHT)),
+                                        ),
+                angle = -pi / 4
+            )
+            self.bodyRef.append(tmp_limb)
+
+            tmp_joint = self.world.CreateRevoluteJoint(
+                bodyA = prev_limb_ref,
+                bodyB = tmp_limb,
+                anchor = current_anchor,
+                lowerAngle = -ANGLE_FREEDOM * b2_pi, # -90 degrees
+                upperAngle = ANGLE_FREEDOM * b2_pi,  #  90 degrees
+                enableLimit = True,
+                maxMotorTorque = MAX_JOINT_TORQUE,
+                motorSpeed = 0.0,
+                enableMotor = True,
+            )
+
+            self.joints.append(tmp_joint)
+            prev_limb_ref = tmp_limb
+
+        # head def + joints
+        current_center += offset
+        current_anchor += offset * 2
+        self.head = self.world.CreateDynamicBody(
+            position = (current_center[0] - HEAD_WIDTH, current_center[1]),
+            fixtures = b2FixtureDef(density = LIMB_DENSITY,
+                                    friction = LIMB_FRICTION,
+                                    restitution = 0.0,
+                                    shape = b2PolygonShape(
+                                        box = (HEAD_WIDTH, LIMB_HEIGHT)),
+                                    ),
+        )
+        self.bodyRef.append(self.head)
+
+        head_joint = self.world.CreateRevoluteJoint(
+            bodyA = prev_limb_ref,
+            bodyB = self.head,
+            anchor = current_anchor,
+            lowerAngle = -ANGLE_FREEDOM * b2_pi, # -90 degrees
+            upperAngle = ANGLE_FREEDOM * b2_pi,  #  90 degrees
+            enableLimit = True,
+            maxMotorTorque = MAX_JOINT_TORQUE,
+            motorSpeed = 0.0,
+            enableMotor = True,
+        )
+        self.joints.append(head_joint)
+
+        # head tracking
+        self.head_prev_pos = np.array(self.head.position)
+        self.head_prev_ang = self.head.angle
+
+    def step(self, action):
+        assert self.action_space.contains(action)
+        # self.world.Step(self.timeStep, self.vel_iters, self.pos_iters)
+        # Framework handles this differently
+        # Copied from bipedal_walker
+        # self.world.Step(1.0 / 50, 6 * 30, 2 * 30)
+        self.world.Step(1.0 / 50, self.vel_iters, self.pos_iters)
+        obs = self._get_obs()
+
+        # MOTOR CONTROL
+        for i in range(len(self.joints)):
+            # Copied from bipedal_walker
+            self.joints[i].motorSpeed = float(MAX_JOINT_SPEED * (VELOCITY_WEIGHT ** i) * np.sign(action[i]))
+            self.joints[i].maxMotorTorque = float(
+                MAX_JOINT_TORQUE * np.clip(np.abs(action[i]), 0, 1)
+            )
+
+        reward = self.reward_function()
+
+        done = False
+        info = {}
+        return obs, reward, done, info

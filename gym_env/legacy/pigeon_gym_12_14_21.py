@@ -323,8 +323,3 @@ class PigeonEnv3Joints(gym.Env):
         if self.viewer:
             self.viewer.close()
             self.viewer = None
-
-
-class PigeonEnv3JointsHeadstart(PigeonEnv3Joints):
-    def __init__(self):
-        super().__init__()

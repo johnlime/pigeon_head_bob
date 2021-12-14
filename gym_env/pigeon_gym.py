@@ -28,7 +28,7 @@ VIEWPORT_SCALE = 6.0
 FPS = 60
 
 HEAD_OFFSET_X = 10
-HEAD_OFFSET_Y = 5
+HEAD_OFFSET_Y = 2
 
 class PigeonEnv3Joints(gym.Env):
     metadata = {"render.modes": ["human", "rgb_array"], "video.frames_per_second": FPS}

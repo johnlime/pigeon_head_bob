@@ -4,7 +4,7 @@ from gym import spaces
 
 from math import sin, pi, sqrt
 import numpy as np
-from copy import deepcopy
+from copy import copy, deepcopy
 
 # anatomical variables ("macros")
 BODY_WIDTH = 10
@@ -206,10 +206,6 @@ class PigeonEnv3Joints(gym.Env):
 
     # modular reward functions
     def _head_stable_manual_reposition(self):
-        # detect whether the target head position is behind the body edge or not
-        if self.head_target_location[0] > self.body.position[0] - float(BODY_WIDTH + HEAD_OFFSET_X):
-            self.head_target_location = np.array(self.body.position) + \
-                self.relative_repositioned_head_target_location
 
         head_dif_loc = np.linalg.norm(np.array(self.head.position) - self.head_target_location)
         head_dif_ang = abs(self.head.angle - self.head_target_angle)
@@ -222,9 +218,6 @@ class PigeonEnv3Joints(gym.Env):
             if head_dif_ang < np.pi / 6: # 30 deg
                 reward += 1 - head_dif_ang/ np.pi
 
-        # if head_dif_loc < self.max_offset:
-        #     reward += 1 - head_dif_ang/ np.pi
-
         return reward
 
 
@@ -234,6 +227,11 @@ class PigeonEnv3Joints(gym.Env):
 
     def step(self, action):
         assert self.action_space.contains(action)
+        # detect whether the target head position is behind the body edge or not
+        if self.head_target_location[0] > self.body.position[0] - float(BODY_WIDTH + HEAD_OFFSET_X):
+            self.head_target_location = np.array(self.body.position) + \
+                self.relative_repositioned_head_target_location
+
         # self.world.Step(self.timeStep, self.vel_iters, self.pos_iters)
         # Framework handles this differently
         # Copied from bipedal_walker
@@ -326,6 +324,16 @@ class PigeonEnv3Joints(gym.Env):
 
 
 class PigeonEnv3JointsHeadstart(PigeonEnv3Joints):
+    def __init__(self,
+                 body_speed = 0,
+                 reward_code = "head_stable_manual_reposition",
+                 max_offset = 0.5):
+
+        super().__init__(body_speed, reward_code, max_offset)
+        self.body_is_fixed = True
+        self.max_fix_counter = 5
+        self.fix_counter = copy(self.max_fix_counter)
+
     def _pigeon_model(self):
         # params
         body_anchor = np.array([float(-BODY_WIDTH), float(BODY_HEIGHT)])
@@ -336,7 +344,11 @@ class PigeonEnv3JointsHeadstart(PigeonEnv3Joints):
         self.body = self.world.CreateKinematicBody(
             position = (0, 0),
             shapes = b2PolygonShape(box = (BODY_WIDTH, BODY_HEIGHT)), # x2 in direct shapes def
-            linearVelocity = (-self.body_speed, 0),
+            #######
+            # Initial body velocity is 0
+            # This is the only section that is altered from the original
+            #######
+            linearVelocity = (0, 0),
             angularVelocity = 0,
             )
         self.bodyRef.append(self.body)
@@ -413,24 +425,40 @@ class PigeonEnv3JointsHeadstart(PigeonEnv3Joints):
         self.head_prev_pos = np.array(self.head.position)
         self.head_prev_ang = self.head.angle
 
+    def _reset_fix(self):
+        self.body_is_fixed = True
+        self.fix_counter = copy(self.max_fix_counter)
+
     def step(self, action):
         assert self.action_space.contains(action)
-        # self.world.Step(self.timeStep, self.vel_iters, self.pos_iters)
-        # Framework handles this differently
-        # Copied from bipedal_walker
-        # self.world.Step(1.0 / 50, 6 * 30, 2 * 30)
+        # detect whether the target head position is behind the body edge or not
+        if self.head_target_location[0] > self.body.position[0] - float(BODY_WIDTH + HEAD_OFFSET_X):
+            self.head_target_location = np.array(self.body.position) + \
+                self.relative_repositioned_head_target_location
+            self._reset_fix()
+
         self.world.Step(1.0 / 50, self.vel_iters, self.pos_iters)
         obs = self._get_obs()
 
-        # MOTOR CONTROL
+        # Motor control
         for i in range(len(self.joints)):
-            # Copied from bipedal_walker
             self.joints[i].motorSpeed = float(MAX_JOINT_SPEED * (VELOCITY_WEIGHT ** i) * np.sign(action[i]))
             self.joints[i].maxMotorTorque = float(
                 MAX_JOINT_TORQUE * np.clip(np.abs(action[i]), 0, 1)
             )
 
         reward = self.reward_function()
+
+        if self.body_is_fixed:
+            # Start body movement when HEAD_REACHES_STATIC
+            if reward > 0:
+                self.fix_counter -= 1
+                if self.fix_counter == 0:
+                    self.body.linearVelocity = b2Vec2(-self.body_speed, 0)
+                    self.body_is_fixed = False
+            else:
+                # if self.fix_counter < self.max_fix_counter:
+                self._reset_fix()
 
         done = False
         info = {}

@@ -1,4 +1,4 @@
-from gym_env.pigeon_gym import PigeonEnv3Joints
+from gym_env.pigeon_gym import PigeonEnv3JointsHeadstart
 import sys
 sys.path.append('src/rlkit_ppo')
 
@@ -15,8 +15,10 @@ from rlkit.torch.torch_rl_algorithm import TorchBatchRLAlgorithm
 import argparse
 
 def experiment(variant, args):
-    expl_env = NormalizedBoxEnv(PigeonEnv3Joints(args.body_speed, args.reward_code, args.max_offset))
-    eval_env = NormalizedBoxEnv(PigeonEnv3Joints(args.body_speed, args.reward_code, args.max_offset))
+    expl_env = NormalizedBoxEnv( \
+        PigeonEnv3JointsHeadstart(args.body_speed, args.reward_code, args.max_offset))
+    eval_env = NormalizedBoxEnv( \
+        PigeonEnv3JointsHeadstart(args.body_speed, args.reward_code, args.max_offset))
     obs_dim = expl_env.observation_space.low.size
     action_dim = eval_env.action_space.low.size
 
@@ -122,7 +124,7 @@ if __name__ == "__main__":
     )
 
     # setting up argparse params (body speed and reward function)
-    setup_logger('sac_pigeon_3_joints_' + args.reward_code + \
+    setup_logger('sac_pigeon_3_joints_headstart_' + args.reward_code + \
                  '_body_speed_' + str(args.body_speed) + \
                  '_max_offset_' + str(args.max_offset),
                  variant=variant)

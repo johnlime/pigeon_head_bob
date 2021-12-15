@@ -263,7 +263,10 @@ class PigeonEnv3Joints(gym.Env):
             + VIEWPORT_SCALE * self.bodyRef[0].position # camera moves with body
 
             # init visualize max_offset
-            self.render_target_area = rendering.make_circle(radius=self.max_offset, res=30, filled=True)
+            self.render_target_area = rendering.make_circle( \
+                radius=VIEWPORT_SCALE * self.max_offset,
+                res=30,
+                filled=True)
             self.target_translate = rendering.Transform(
                 translation = VIEWPORT_SCALE * self.head_target_location - self.camera_trans,
                 rotation = 0.0,

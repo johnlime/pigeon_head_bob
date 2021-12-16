@@ -1,4 +1,4 @@
-from gym_env.pigeon_gym import PigeonEnv3Joints, PigeonEnv3JointsHeadstart
+from gym_env.pigeon_gym import PigeonEnv3Joints#, PigeonEnv3JointsHeadstart
 import argparse
 import torch
 import numpy as np
@@ -18,7 +18,7 @@ def run_rand_policy(body_speed, reward_code, max_offset):
 
 def run_trained_policy(policy, body_speed, reward_code,
                        max_offset, video_path = None):
-    env = PigeonEnv3JointsHeadstart(body_speed, reward_code, max_offset)
+    env = PigeonEnv3Joints(body_speed, reward_code, max_offset)
 
     if video_path is not None:
         from gym import wrappers

@@ -334,7 +334,7 @@ class PigeonEnv3JointsHeadstart(PigeonEnv3Joints):
 
         super().__init__(body_speed, reward_code, max_offset)
         self.body_is_fixed = True
-        self.max_fix_counter = 5
+        self.max_fix_counter = 2
         self.fix_counter = copy(self.max_fix_counter)
 
     def _pigeon_model(self):

@@ -84,6 +84,9 @@ class PigeonEnv3Joints(gym.Env):
             self.head_target_angle = self.head.angle
             self.reward_function = self._head_stable_manual_reposition
 
+            if "strict_angle" in reward_code:
+                self.reward_function = self._head_stable_manual_reposition_strict_angle
+
         else:
             raise ValueError("Unknown reward_code")
 
@@ -210,15 +213,18 @@ class PigeonEnv3Joints(gym.Env):
             self.head_target_location = np.array(self.body.position) + \
                 self.relative_repositioned_head_target_location
 
+        head_dif_loc = np.linalg.norm(np.array(self.head.position) - \
+                self.head_target_location)
+        head_dif_ang = abs(self.head.angle - self.head_target_angle)
+        return head_dif_loc, head_dif_ang
+
     """
     Modular Reward Functions
     """
     def _head_stable_manual_reposition(self):
         # This method is separated from step(), since there are variables used
         # that are only defined in with this strain of reward functions
-        self._head_target_reposition_mechanism()
-        head_dif_loc = np.linalg.norm(np.array(self.head.position) - self.head_target_location)
-        head_dif_ang = abs(self.head.angle - self.head_target_angle)
+        head_dif_loc, head_dif_ang = self._head_target_reposition_mechanism()
 
         reward = 0
         # threshold reward function with static offset
@@ -230,6 +236,16 @@ class PigeonEnv3Joints(gym.Env):
 
         return reward
 
+    def _head_stable_manual_reposition_strict_angle(self):
+        head_dif_loc, head_dif_ang = self._head_target_reposition_mechanism()
+
+        reward = 0
+        # threshold reward function with static offset
+        if head_dif_loc < self.max_offset:
+            if head_dif_ang < np.pi / 6: # 30 deg
+                reward += 1 - head_dif_ang/ np.pi
+
+        return reward
 
     def _head_stable_movement_minimizer(self):
         reward = 0

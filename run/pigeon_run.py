@@ -46,10 +46,12 @@ if __name__ == "__main__":
                         help='pigeon body speed')
     parser.add_argument('-rc', '--reward_code', type=str,
                         default="head_stable_manual_reposition",
-                        help='specify reward function')
+                        help='specify reward function: \n' + \
+                             '  head_stable_manual_reposition \n' + \
+                             '  head_stable_manual_reposition_strict_angle')
     parser.add_argument('-mo', '--max_offset', type=float,
                         default=1.0,
-                        help='specify max offset for reward function 03+')
+                        help='specify max offset for aligning head to target')
     parser.add_argument('-v', '--video', action = 'store_true',
                         help='export to video')
     args = parser.parse_args()

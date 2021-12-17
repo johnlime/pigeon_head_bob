@@ -85,14 +85,16 @@ def experiment(variant, args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--body_speed', type=float, default=1,
+    parser.add_argument('-bs', '--body_speed', type=float, default=1.0,
                         help='pigeon body speed')
-    parser.add_argument('--reward_code', type=str,
+    parser.add_argument('-rc', '--reward_code', type=str,
                         default="head_stable_manual_reposition",
-                        help='specify reward function')
-    parser.add_argument('--max_offset', type=float,
-                        default=1,
-                        help='specify max offset for reward function 03+')
+                        help='specify reward function: \n' + \
+                             '  head_stable_manual_reposition \n' + \
+                             '  head_stable_manual_reposition_strict_angle')
+    parser.add_argument('-mo', '--max_offset', type=float,
+                        default=1.0,
+                        help='specify max offset for aligning head to target')
     args = parser.parse_args()
 
     # noinspection PyTypeChecker

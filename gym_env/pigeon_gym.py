@@ -19,7 +19,7 @@ ANGLE_FREEDOM = 0.55 #0.5
 
 # control variables/macros
 MAX_JOINT_TORQUE = 3 * 10 ** 2
-MAX_JOINT_SPEED = 1 * 10
+MAX_JOINT_SPEED = 10
 VELOCITY_WEIGHT = 1.0
 LIMB_DENSITY = 0.1 ** 3
 LIMB_FRICTION = 5
@@ -204,8 +204,19 @@ class PigeonEnv3Joints(gym.Env):
         self._pigeon_model()
         return self._get_obs()
 
-    # modular reward functions
+    def _head_target_reposition_mechanism(self):
+        # detect whether the target head position is behind the body edge or not
+        if self.head_target_location[0] > self.body.position[0] - float(BODY_WIDTH + HEAD_OFFSET_X):
+            self.head_target_location = np.array(self.body.position) + \
+                self.relative_repositioned_head_target_location
+
+    """
+    Modular Reward Functions
+    """
     def _head_stable_manual_reposition(self):
+        # This method is separated from step(), since there are variables used
+        # that are only defined in with this strain of reward functions
+        self._head_target_reposition_mechanism()
         head_dif_loc = np.linalg.norm(np.array(self.head.position) - self.head_target_location)
         head_dif_ang = abs(self.head.angle - self.head_target_angle)
 
@@ -226,11 +237,6 @@ class PigeonEnv3Joints(gym.Env):
 
     def step(self, action):
         assert self.action_space.contains(action)
-        # detect whether the target head position is behind the body edge or not
-        if self.head_target_location[0] > self.body.position[0] - float(BODY_WIDTH + HEAD_OFFSET_X):
-            self.head_target_location = np.array(self.body.position) + \
-                self.relative_repositioned_head_target_location
-
         # self.world.Step(self.timeStep, self.vel_iters, self.pos_iters)
         # Framework handles this differently
         # Referenced bipedal_walker

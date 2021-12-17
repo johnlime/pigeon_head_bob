@@ -15,14 +15,14 @@ LIMB_HEIGHT = 2
 
 HEAD_WIDTH = 3
 
-ANGLE_FREEDOM = 0.55 #0.5
+ANGLE_FREEDOM = 0.60 #0.5
 
 # control variables/macros
-MAX_JOINT_TORQUE = 3 * 10 ** 2
-MAX_JOINT_SPEED = 1 * 10
+MAX_JOINT_TORQUE = 2 * 10 ** 2
+MAX_JOINT_SPEED = 3
 VELOCITY_WEIGHT = 1.0
 LIMB_DENSITY = 0.1 ** 3
-LIMB_FRICTION = 5
+LIMB_FRICTION = 6
 
 VIEWPORT_SCALE = 6.0
 FPS = 60
@@ -206,6 +206,7 @@ class PigeonEnv3Joints(gym.Env):
 
     # modular reward functions
     def _head_stable_manual_reposition(self):
+
         head_dif_loc = np.linalg.norm(np.array(self.head.position) - self.head_target_location)
         head_dif_ang = abs(self.head.angle - self.head_target_angle)
 
@@ -233,9 +234,9 @@ class PigeonEnv3Joints(gym.Env):
 
         # self.world.Step(self.timeStep, self.vel_iters, self.pos_iters)
         # Framework handles this differently
-        # Referenced bipedal_walker
+        # Copied from bipedal_walker
         # self.world.Step(1.0 / 50, 6 * 30, 2 * 30)
-        self.world.Step(1.0 / FPS, self.vel_iters, self.pos_iters)
+        self.world.Step(1.0 / 50, self.vel_iters, self.pos_iters)
         obs = self._get_obs()
 
         # MOTOR CONTROL
@@ -323,3 +324,145 @@ class PigeonEnv3Joints(gym.Env):
         if self.viewer:
             self.viewer.close()
             self.viewer = None
+
+
+class PigeonEnv3JointsHeadstart(PigeonEnv3Joints):
+    def __init__(self,
+                 body_speed = 0,
+                 reward_code = "head_stable_manual_reposition",
+                 max_offset = 0.5):
+
+        super().__init__(body_speed, reward_code, max_offset)
+        self.body_is_fixed = True
+        self.max_fix_counter = 2
+        self.fix_counter = copy(self.max_fix_counter)
+
+    def _pigeon_model(self):
+        # params
+        body_anchor = np.array([float(-BODY_WIDTH), float(BODY_HEIGHT)])
+        limb_width_cos = LIMB_WIDTH / sqrt(2)
+
+        self.bodyRef = []
+        # body definition
+        self.body = self.world.CreateKinematicBody(
+            position = (0, 0),
+            shapes = b2PolygonShape(box = (BODY_WIDTH, BODY_HEIGHT)), # x2 in direct shapes def
+            #######
+            # Initial body velocity is 0
+            # This is the only section that is altered from the original
+            #######
+            linearVelocity = (0, 0),
+            angularVelocity = 0,
+            )
+        self.bodyRef.append(self.body)
+
+        # neck as limbs + joints definition
+        self.joints = []
+        current_center = deepcopy(body_anchor)
+        current_anchor = deepcopy(body_anchor)
+        offset = np.array([-limb_width_cos, limb_width_cos])
+        prev_limb_ref = self.body
+        for i in range(2):
+            if i == 0:
+                current_center += offset
+
+            else:
+                current_center += offset * 2
+                current_anchor += offset * 2
+
+            tmp_limb = self.world.CreateDynamicBody(
+                position = (current_center[0], current_center[1]),
+                fixtures = b2FixtureDef(density = LIMB_DENSITY,
+                                        friction = LIMB_FRICTION,
+                                        restitution = 0.0,
+                                        shape = b2PolygonShape(
+                                            box = (LIMB_WIDTH, LIMB_HEIGHT)),
+                                        ),
+                angle = -pi / 4
+            )
+            self.bodyRef.append(tmp_limb)
+
+            tmp_joint = self.world.CreateRevoluteJoint(
+                bodyA = prev_limb_ref,
+                bodyB = tmp_limb,
+                anchor = current_anchor,
+                lowerAngle = -ANGLE_FREEDOM * b2_pi, # -90 degrees
+                upperAngle = ANGLE_FREEDOM * b2_pi,  #  90 degrees
+                enableLimit = True,
+                maxMotorTorque = MAX_JOINT_TORQUE,
+                motorSpeed = 0.0,
+                enableMotor = True,
+            )
+
+            self.joints.append(tmp_joint)
+            prev_limb_ref = tmp_limb
+
+        # head def + joints
+        current_center += offset
+        current_anchor += offset * 2
+        self.head = self.world.CreateDynamicBody(
+            position = (current_center[0] - HEAD_WIDTH, current_center[1]),
+            fixtures = b2FixtureDef(density = LIMB_DENSITY,
+                                    friction = LIMB_FRICTION,
+                                    restitution = 0.0,
+                                    shape = b2PolygonShape(
+                                        box = (HEAD_WIDTH, LIMB_HEIGHT)),
+                                    ),
+        )
+        self.bodyRef.append(self.head)
+
+        head_joint = self.world.CreateRevoluteJoint(
+            bodyA = prev_limb_ref,
+            bodyB = self.head,
+            anchor = current_anchor,
+            lowerAngle = -ANGLE_FREEDOM * b2_pi, # -90 degrees
+            upperAngle = ANGLE_FREEDOM * b2_pi,  #  90 degrees
+            enableLimit = True,
+            maxMotorTorque = MAX_JOINT_TORQUE,
+            motorSpeed = 0.0,
+            enableMotor = True,
+        )
+        self.joints.append(head_joint)
+
+        # head tracking
+        self.head_prev_pos = np.array(self.head.position)
+        self.head_prev_ang = self.head.angle
+
+    def _reset_fix(self):
+        self.body_is_fixed = True
+        self.fix_counter = copy(self.max_fix_counter)
+
+    def step(self, action):
+        assert self.action_space.contains(action)
+        # detect whether the target head position is behind the body edge or not
+        if self.head_target_location[0] > self.body.position[0] - float(BODY_WIDTH + HEAD_OFFSET_X):
+            self.head_target_location = np.array(self.body.position) + \
+                self.relative_repositioned_head_target_location
+            self._reset_fix()
+
+        self.world.Step(1.0 / 50, self.vel_iters, self.pos_iters)
+        obs = self._get_obs()
+
+        # Motor control
+        for i in range(len(self.joints)):
+            self.joints[i].motorSpeed = float(MAX_JOINT_SPEED * (VELOCITY_WEIGHT ** i) * np.sign(action[i]))
+            self.joints[i].maxMotorTorque = float(
+                MAX_JOINT_TORQUE * np.clip(np.abs(action[i]), 0, 1)
+            )
+
+        reward = self.reward_function()
+
+        if self.body_is_fixed:
+            # Start body movement when HEAD_REACHES_STATIC
+            if reward > 0:
+                self.fix_counter -= 1
+                if self.fix_counter == 0:
+                    self.body.linearVelocity = b2Vec2(-self.body_speed, 0)
+                    self.body_is_fixed = False
+            else:
+                # if self.fix_counter < self.max_fix_counter:
+                self._reset_fix()
+
+        done = False
+        info = {}
+        return obs, reward, done, info

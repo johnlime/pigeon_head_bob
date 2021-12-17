@@ -1,4 +1,4 @@
-from gym_env.pigeon_gym import PigeonEnv3Joints#, PigeonEnv3JointsHeadstart
+from gym_env.pigeon_gym import PigeonEnv3Joints
 import argparse
 import torch
 import numpy as np

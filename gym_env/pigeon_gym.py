@@ -6,29 +6,33 @@ from math import sin, pi, sqrt
 import numpy as np
 from copy import copy, deepcopy
 
-# anatomical variables ("macros")
-BODY_WIDTH = 10
-BODY_HEIGHT = 5
+# Referenced BipedalWalker-v2]
+# Kept separate for intuition
+SCALE = 20
 
-LIMB_WIDTH = 5
-LIMB_HEIGHT = 2
+# Anatomical variables
+BODY_WIDTH = 10 / SCALE
+BODY_HEIGHT = 5 / SCALE
 
-HEAD_WIDTH = 3
+LIMB_WIDTH = 5 / SCALE
+LIMB_HEIGHT = 2 / SCALE
+
+HEAD_WIDTH = 3 / SCALE
 
 ANGLE_FREEDOM = 0.55 #0.5
 
 # control variables/macros
-MAX_JOINT_TORQUE = 3 * 10 ** 2
-MAX_JOINT_SPEED = 10
+MAX_JOINT_TORQUE = 70
+MAX_JOINT_SPEED = 4
 VELOCITY_WEIGHT = 1.0
-LIMB_DENSITY = 0.1 ** 3
-LIMB_FRICTION = 5
+LIMB_DENSITY = 1.0
+LIMB_FRICTION = 3
 
-VIEWPORT_SCALE = 6.0
-FPS = 60
+VIEWPORT_SCALE = 6.0 * SCALE
+FPS = 50
 
-HEAD_OFFSET_X = 10
-HEAD_OFFSET_Y = 2
+HEAD_OFFSET_X = 10 / SCALE
+HEAD_OFFSET_Y = 2 / SCALE
 
 class PigeonEnv3Joints(gym.Env):
     metadata = {"render.modes": ["human", "rgb_array"], "video.frames_per_second": FPS}
@@ -62,7 +66,7 @@ class PigeonEnv3Joints(gym.Env):
         self.joints = []
         self.head = None
         self.bodyRef = [] # for destruction
-        self.body_speed = body_speed
+        self.body_speed = body_speed / SCALE
         self._pigeon_model()
 
         """
@@ -77,7 +81,7 @@ class PigeonEnv3Joints(gym.Env):
         Assigning a Reward Function
         """
         if "head_stable_manual_reposition" in reward_code:
-            self.max_offset = max_offset
+            self.max_offset = max_offset / (SCALE ** 2)
 
             self.relative_repositioned_head_target_location = np.array(self.head.position) - np.array([0, HEAD_OFFSET_Y])
             self.head_target_location = self.relative_repositioned_head_target_location + np.array(self.body.position)

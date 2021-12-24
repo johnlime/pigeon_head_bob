@@ -76,6 +76,12 @@ class PigeonEnv3Joints(gym.Env):
         """
         Assigning a Reward Function
         """
+        self._assign_reward_func(reward_code, max_offset)
+
+    """
+    Define Reward Function and Necessary Parameters
+    """
+    def _assign_reward_func(self, reward_code, max_offset):
         if "head_stable_manual_reposition" in reward_code:
             self.max_offset = max_offset
 
@@ -283,19 +289,23 @@ class PigeonEnv3Joints(gym.Env):
             self.camera_trans = b2Vec2(-250, -200) \
             + VIEWPORT_SCALE * self.bodyRef[0].position # camera moves with body
 
-            # init visualize max_offset
-            self.render_target_area = rendering.make_circle( \
-                radius=VIEWPORT_SCALE * self.max_offset,
-                res=30,
-                filled=True)
-            self.target_translate = rendering.Transform(
-                translation = VIEWPORT_SCALE * self.head_target_location - self.camera_trans,
-                rotation = 0.0,
-                scale = VIEWPORT_SCALE * np.ones(2)
-            )
-            self.render_target_area.add_attr(self.target_translate)
-            self.render_target_area.set_color(0.0, 1.0, 0.0)
-            self.viewer.add_geom(self.render_target_area)
+            ## Needs head_stable_manual_reposition reward function to execute
+            try:
+                # init visualize max_offset
+                self.render_target_area = rendering.make_circle( \
+                    radius=VIEWPORT_SCALE * self.max_offset,
+                    res=30,
+                    filled=True)
+                self.target_translate = rendering.Transform(
+                    translation = VIEWPORT_SCALE * self.head_target_location - self.camera_trans,
+                    rotation = 0.0,
+                    scale = VIEWPORT_SCALE * np.ones(2)
+                )
+                self.render_target_area.add_attr(self.target_translate)
+                self.render_target_area.set_color(0.0, 1.0, 0.0)
+                self.viewer.add_geom(self.render_target_area)
+            except:
+                pass
 
             # init translation and rotation for each limb
             self.render_polygon_list = []
@@ -326,9 +336,13 @@ class PigeonEnv3Joints(gym.Env):
         self.camera_trans = b2Vec2(-250, -200) \
         + VIEWPORT_SCALE * self.bodyRef[0].position # camera moves with body
 
-        # update max_offset shape translation
-        new_target_translate = VIEWPORT_SCALE * self.head_target_location - self.camera_trans
-        self.target_translate.set_translation(new_target_translate[0], new_target_translate[1])
+        ## Needs head_stable_manual_reposition reward function to execute
+        try:
+            # update max_offset shape translation
+            new_target_translate = VIEWPORT_SCALE * self.head_target_location - self.camera_trans
+            self.target_translate.set_translation(new_target_translate[0], new_target_translate[1])
+        except:
+            pass
 
         # update body rotation and translation
         for i, body in enumerate(self.bodyRef):

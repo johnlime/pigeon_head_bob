@@ -20,11 +20,6 @@ class PigeonRetinalEnv(PigeonEnv3Joints):
         high = np.array([np.inf] * 10).astype(np.float32) # formally 10
         self.observation_space = spaces.Box(-high, high)
 
-        """
-        Reassigning a Reward Function
-        """
-        self._assign_reward_func(reward_code)
-
     def _assign_reward_func(self, reward_code, max_offset = None):
         if "placeholder" in reward_code:
             self.reward_function = self._placeholder

@@ -12,7 +12,7 @@ def run_rand_policy(env):
         env.render()
         action = env.action_space.sample()
         _, reward, _, _ = env.step(action)
-        # print(env.head_target_location)
+        print(env.head.angle)
         # print(reward)
     env.close()
 

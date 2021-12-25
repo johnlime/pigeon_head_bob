@@ -1,12 +1,12 @@
 from gym_env.pigeon_gym import PigeonEnv3Joints
+from gym_env.pigeon_gym_retinal import PigeonRetinalEnv
 import argparse
 import torch
 import numpy as np
 import sys
 sys.path.append('src/rlkit_ppo')
 
-def run_rand_policy(body_speed, reward_code, max_offset):
-    env = PigeonEnv3Joints(body_speed, reward_code, max_offset)
+def run_rand_policy(env):
     observation = env.reset()
     for t in range(1000):
         env.render()
@@ -16,10 +16,7 @@ def run_rand_policy(body_speed, reward_code, max_offset):
         # print(reward)
     env.close()
 
-def run_trained_policy(policy, body_speed, reward_code,
-                       max_offset, video_path = None):
-    env = PigeonEnv3Joints(body_speed, reward_code, max_offset)
-
+def run_trained_policy(policy, env, video_path = None):
     if video_path is not None:
         from gym import wrappers
         env = wrappers.RecordVideo(env, video_path)
@@ -40,6 +37,11 @@ def run_trained_policy(policy, body_speed, reward_code,
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument('-env', '--environment', type=str,
+                        default = "PigeonEnv3Joints",
+                        help = 'name of environment: \n' + \
+                               '  PigeonEnv3Joints \n' + \
+                               '  PigeonRetinalEnv')
     parser.add_argument('-dir', '--snapshot_directory', type=str,
                         help='path to the snapshot directory')
     parser.add_argument('-bs', '--body_speed', type=float, default=1.0,
@@ -56,8 +58,18 @@ if __name__ == "__main__":
                         help='export to video')
     args = parser.parse_args()
 
+    # Select environment
+    if args.environment == "PigeonEnv3Joints":
+        env = PigeonEnv3Joints(args.body_speed, args.reward_code, args.max_offset)
+    elif args.environment == "PigeonRetinalEnv":
+        env = PigeonRetinalEnv(args.body_speed, args.reward_code)
+    else:
+        ValueError("Unknown pigeon gym environment")
+
+
+    # Check to see if user wants to test a specific trained policy
     if args.snapshot_directory is None:
-        run_rand_policy(args.body_speed, args.reward_code, args.max_offset)
+        run_rand_policy(env)
 
     else:
         if args.snapshot_directory[-1] == '/':
@@ -76,8 +88,7 @@ if __name__ == "__main__":
             except:
                 os.mkdir(video_path)
 
-            run_trained_policy(policy, args.body_speed, args.reward_code,
-                               args.max_offset, video_path = video_path)
+            run_trained_policy(policy, env, video_path = video_path)
 
         else:
-            run_trained_policy(policy, args.body_speed, args.reward_code, args.max_offset)
+            run_trained_policy(policy, env)

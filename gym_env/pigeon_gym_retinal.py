@@ -24,11 +24,17 @@ class PigeonRetinalEnv(PigeonEnv3Joints):
         if "placeholder" in reward_code:
             self.reward_function = self._placeholder
 
+        elif reward_code == "motion_parallax":
+            self.reward_function = self._motion_parallax
+
         else:
             raise ValueError("Unknown reward_code")
 
     def _placeholder(self):
         return 0
+
+    def _motion_parallax(self):
+        return np.linalg.norm(np.array(self.head.position))
 
     def _get_obs(self):
         # (self.head{relative}, self.joints -> obs) operation

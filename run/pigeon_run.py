@@ -12,7 +12,7 @@ def run_rand_policy(env):
         env.render()
         action = env.action_space.sample()
         _, reward, _, _ = env.step(action)
-        print(env.head.angle)
+        # print(env.head.angle)
         # print(reward)
     env.close()
 
@@ -48,9 +48,14 @@ if __name__ == "__main__":
                         help='pigeon body speed')
     parser.add_argument('-rc', '--reward_code', type=str,
                         default="head_stable_manual_reposition",
-                        help='specify reward function: \n' + \
+                        help='specify reward function \n' + \
+                             'PigeonEnv3Joints: \n' + \
                              '  head_stable_manual_reposition \n' + \
-                             '  head_stable_manual_reposition_strict_angle')
+                             '  head_stable_manual_reposition_strict_angle \n' + \
+                             'PigeonRetinalEnv \n' + \
+                             '  placeholder \n' + \
+                             '  motion_parallax'
+                             )
     parser.add_argument('-mo', '--max_offset', type=float,
                         default=1.0,
                         help='specify max offset for aligning head to target')

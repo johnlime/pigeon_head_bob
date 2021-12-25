@@ -1,4 +1,4 @@
-from gym_env.pigeon_gym import PigeonEnv3Joints
+from gym_env.pigeon_gym import PigeonEnv3Joints, VIEWPORT_SCALE
 import numpy as np
 import gym
 from gym import spaces
@@ -24,13 +24,13 @@ class PigeonRetinalEnv(PigeonEnv3Joints):
         """
         Object Location Init
         """
-        object = np.array([-100.0, 100.0])
+        self.object = np.array([-30.0, 30.0])
 
 
     """
     Retinal coords (angles); Within [-np.pi, np.pi]
     """
-    def _get_retinal(object):
+    def _get_retinal(self, object):
         # normalized direction of object from head
         object_direction = object - np.array(self.head.position)
         object_direction = object_direction / np.linalg.norm(object_direction)
@@ -40,25 +40,25 @@ class PigeonRetinalEnv(PigeonEnv3Joints):
         if object_direction[1] < 0:
             sign = -1
 
-        # calculate sine angle of object relative to head (positive if above, negative if below)
-        sine_angle = sign * np.arcsin( \
-            np.sqrt(1 - np.dot(np.array([-1.0, 0.0]), object_direction) ** 2))
+        # calculate COSINE angle of object relative to head (positive if above, negative if below)
+        cosine_angle = sign * np.arccos( \
+            np.dot(np.array([-1.0, 0.0]), object_direction) ** 2)
 
         # differnce in angle between the head angle and sine_angle of head
-        angular_difference = sine_angle + self.head.angle
+        angular_difference = cosine_angle + self.head.angle
 
         # angular_difference should be within [-np.pi, np.pi]
         if angular_difference < -np.pi:
             k = 1
             while angular_difference < (k + 1) * -np.pi:
                 k += 1
-            angular_difference = -angular_difference + (-1) ** (k - 1) * 2 * np.pi
+            angular_difference = angular_difference + 2 * np.pi * ((k + 1) // 2)
 
         elif angular_difference > np.pi:
             k = 1
             while angular_difference > (k + 1) * np.pi:
                 k += 1
-            angular_difference = angular_difference + (-1) ** k * 2 * np.pi
+            angular_difference = angular_difference - 2 * np.pi * ((k + 1) // 2)
 
         return angular_difference
 
@@ -92,5 +92,31 @@ class PigeonRetinalEnv(PigeonEnv3Joints):
         return obs
 
     def step(self, action):
+        self._get_retinal(self.object)
         # alter object
         return super().step(action)
+
+    def render(self, mode = "human"):
+        from gym.envs.classic_control import rendering
+        if self.viewer is None:
+            self.render_object = None
+
+        super().render(mode)
+        if self.render_object is None:
+            self.render_object = rendering.make_circle( \
+                radius=VIEWPORT_SCALE * 0.1,
+                res=30,
+                filled=True)
+            self.object_translate = rendering.Transform(
+                translation = VIEWPORT_SCALE * self.object - self.camera_trans,
+                rotation = 0.0,
+                scale = VIEWPORT_SCALE * np.ones(2)
+            )
+            self.render_object.add_attr(self.object_translate)
+            self.render_object.set_color(0.0, 1.0, 0.0)
+            self.viewer.add_geom(self.render_object)
+
+        new_object_translate = VIEWPORT_SCALE * self.object - self.camera_trans
+        self.object_translate.set_translation(new_object_translate[0], new_object_translate[1])
+
+        return self.viewer.render(return_rgb_array = mode == "rgb_array")

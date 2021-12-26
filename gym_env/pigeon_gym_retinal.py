@@ -9,6 +9,16 @@ class PigeonRetinalEnv(PigeonEnv3Joints):
                  body_speed = 0,
                  reward_code = "motion_parallax"):
 
+        """
+        Object Location Init (2D Tensor)
+        """
+        self.objects_position = np.array([[-30.0, 30.0]])
+        self.objects_velocity = np.array([[0.0, 0.0]])
+
+        """
+        Init based on superclass
+        Reward function is defined here
+        """
         super().__init__(body_speed, reward_code)
 
         """
@@ -21,11 +31,6 @@ class PigeonRetinalEnv(PigeonEnv3Joints):
         high = np.array([np.inf] * 10).astype(np.float32) # formally 10
         self.observation_space = spaces.Box(-high, high)
 
-        """
-        Object Location Init (2D Tensor)
-        """
-        self.objects_position = np.array([[-30.0, 30.0]])
-
 
     """
     Retinal coords (angles); Within [-np.pi, np.pi]
@@ -35,10 +40,11 @@ class PigeonRetinalEnv(PigeonEnv3Joints):
         object_direction = object_position - np.array(self.head.position)
         object_direction = object_direction / np.linalg.norm(object_direction)
 
-        # is the object above or below the head?
-        sign = 1
-        if object_direction[1] < 0:
-            sign = -1
+        sign = np.ones(object_direction.shape[0])
+        for i in range(sign.size):
+            # is the object above or below the head?
+            if object_direction[i][1] < 0:
+                sign[i] = -1
 
         # calculate COSINE angle of object relative to head (positive if above, negative if below)
         # cosine_angle is of size [num_objects,]
@@ -70,7 +76,7 @@ class PigeonRetinalEnv(PigeonEnv3Joints):
         for i in range(angle_velocity.size):
             if angle_speed[i] > np.pi:
                 angle_velocity[i] = 2 * np.pi - angle_velocity[i]
-            elif angle_speed[i] < -np.pi
+            elif angle_speed[i] < -np.pi:
                 angle_velocity[i] = 2 * np.pi + angle_velocity[i]
             else:
                 pass
@@ -94,7 +100,8 @@ class PigeonRetinalEnv(PigeonEnv3Joints):
         # sum of motion parallax magnitudes
         for i in range(parallax_velocities.size):
             for j in range(i, parallax_velocities.size):
-                reward += np.abs(parallax_velocities[i], parallax_velocities[j])
+                reward += np.abs(parallax_velocities[i] - parallax_velocities[j])
+            # reward += parallax_velocities[i]
         return reward
 
     def _get_obs(self):
@@ -110,31 +117,43 @@ class PigeonRetinalEnv(PigeonEnv3Joints):
         return obs
 
     def step(self, action):
-        self._get_retinal(self.object)
+        self.prev_angle = self._get_retinal(self.objects_position)
         # alter object
+        self.objects_position += self.objects_velocity
         return super().step(action)
 
     def render(self, mode = "human"):
         from gym.envs.classic_control import rendering
         if self.viewer is None:
-            self.render_object = None
+            self.render_objects_list = None
+            self.render_objects_translate_list = None
 
         super().render(mode)
-        if self.render_object is None:
-            self.render_object = rendering.make_circle( \
-                radius=VIEWPORT_SCALE * 0.1,
-                res=30,
-                filled=True)
-            self.object_translate = rendering.Transform(
-                translation = VIEWPORT_SCALE * self.object - self.camera_trans,
-                rotation = 0.0,
-                scale = VIEWPORT_SCALE * np.ones(2)
-            )
-            self.render_object.add_attr(self.object_translate)
-            self.render_object.set_color(0.0, 1.0, 0.0)
-            self.viewer.add_geom(self.render_object)
+        # initialize object rendering pointers
+        if self.render_objects_list is None:
+            self.render_objects_list = []
+            self.render_objects_translate_list = []
+            for i in range(self.objects_position.shape[0]):
+                object_render_instance = rendering.make_circle( \
+                    radius=0.6,
+                    res=30,
+                    filled=True)
+                object_render_instance_translate = rendering.Transform(
+                    translation = VIEWPORT_SCALE * \
+                        (self.objects_position[i] - self.camera_trans),
+                    rotation = 0.0,
+                    scale = VIEWPORT_SCALE * np.ones(2)
+                )
+                object_render_instance.add_attr(object_render_instance_translate)
+                object_render_instance.set_color(0.0, 1.0, 0.0)
+                self.render_objects_list.append(object_render_instance)
+                self.render_objects_translate_list.append(object_render_instance_translate)
+                self.viewer.add_geom(object_render_instance)
 
-        new_object_translate = VIEWPORT_SCALE * self.object - self.camera_trans
-        self.object_translate.set_translation(new_object_translate[0], new_object_translate[1])
+        # update object translation
+        new_object_translate = VIEWPORT_SCALE * self.objects_position - self.camera_trans
+        for i in range(self.objects_position.shape[0]):
+            self.render_objects_translate_list[i].set_translation( \
+                new_object_translate[i][0], new_object_translate[i][1])
 
         return self.viewer.render(return_rgb_array = mode == "rgb_array")

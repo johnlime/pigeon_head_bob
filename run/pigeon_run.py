@@ -13,7 +13,7 @@ def run_rand_policy(env):
         action = env.action_space.sample()
         _, reward, _, _ = env.step(action)
         # print(env.head.angle)
-        # print(reward)
+        print(reward)
     env.close()
 
 def run_trained_policy(policy, env, video_path = None):
@@ -69,7 +69,7 @@ if __name__ == "__main__":
     elif args.environment == "PigeonRetinalEnv":
         env = PigeonRetinalEnv(args.body_speed, args.reward_code)
     else:
-        ValueError("Unknown pigeon gym environment")
+        raise ValueError("Unknown pigeon gym environment")
 
 
     # Check to see if user wants to test a specific trained policy

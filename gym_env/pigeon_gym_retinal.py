@@ -84,9 +84,11 @@ class PigeonRetinalEnv(PigeonEnv3Joints):
 
 
     def _assign_reward_func(self, reward_code, max_offset = None):
+        self.prev_angle = self._get_retinal(self.objects_position)
         if "motion_parallax" in reward_code:
-            self.prev_angle = self._get_retinal(self.objects_position)
             self.reward_function = self._motion_parallax
+        elif "retinal_stabilization" in reward_code:
+            self.reward_function = self._retinal_stabilization
         else:
             raise ValueError("Unknown reward_code")
 
@@ -102,6 +104,14 @@ class PigeonRetinalEnv(PigeonEnv3Joints):
             for j in range(i, parallax_velocities.size):
                 reward += np.abs(parallax_velocities[i] - parallax_velocities[j])
             # reward += parallax_velocities[i]
+        return reward
+
+    def _retinal_stabilization(self):
+        reward = 0
+        current_angle = self._get_retinal(self.objects_position)
+        relative_speeds = \
+            np.absolute(self._get_angular_velocity(current_angle, self.prev_angle))
+        reward -= np.sum(relative_speeds)
         return reward
 
     def _get_obs(self):

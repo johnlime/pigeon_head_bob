@@ -53,8 +53,8 @@ if __name__ == "__main__":
                              '  head_stable_manual_reposition \n' + \
                              '  head_stable_manual_reposition_strict_angle \n' + \
                              'PigeonRetinalEnv \n' + \
-                             '  placeholder \n' + \
-                             '  motion_parallax'
+                             '  motion_parallax \n' + \
+                             '  retinal_stabilization'
                              )
     parser.add_argument('-mo', '--max_offset', type=float,
                         default=1.0,

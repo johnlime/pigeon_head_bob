@@ -62,6 +62,12 @@ class PigeonRetinalEnv(PigeonEnv3Joints):
 
         return angular_difference
 
+    def _get_angular_speed(self, prev_ang, current_ang):
+        ang_speed = np.absolute(current_ang - prev_ang)
+        if ang_speed > np.pi:
+            ang_speed = 2 * np.pi - ang_speed
+        return ang_speed
+
 
     def _assign_reward_func(self, reward_code, max_offset = None):
         if "placeholder" in reward_code:

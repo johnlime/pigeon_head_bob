@@ -64,9 +64,9 @@ class PigeonRetinalEnv(PigeonEnv3Joints):
 
     def _get_angular_speed(self, prev_ang, current_ang):
         ang_speed = np.absolute(current_ang - prev_ang)
-        for i in range(ang_speed.size):
-            if ang_speed[i] > np.pi:
-                ang_speed[i] = 2 * np.pi - ang_speed[i]
+        ang_speed = ang_speed.where(ang_speed > np.pi,
+                                    ang_speed,
+                                    2 * np.pi - ang_speed)
         return ang_speed
 
 

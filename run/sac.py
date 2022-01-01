@@ -1,4 +1,5 @@
-from gym_env.pigeon_gym import PigeonEnv3Joints, PigeonRetinalEnv
+from gym_env.pigeon_gym import PigeonEnv3Joints
+from gym_env.pigeon_gym_retinal import PigeonRetinalEnv
 import sys
 sys.path.append('src/rlkit_ppo')
 

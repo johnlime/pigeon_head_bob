@@ -13,7 +13,7 @@ class PigeonRetinalEnv(PigeonEnv3Joints):
         Object Location Init (2D Tensor)
         """
         self.objects_position = np.array([[-30.0, 30.0],
-                                          [-30.0, 60.0],])
+                                          [-30.0, 60.0],
                                           [-60.0, 30.0],])
         self.objects_velocity = np.array([[0.0, 0.0],
                                           [1.0, 0.0],

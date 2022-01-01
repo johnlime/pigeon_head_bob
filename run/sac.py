@@ -1,4 +1,4 @@
-from gym_env.pigeon_gym import PigeonEnv3Joints
+from gym_env.pigeon_gym import PigeonEnv3Joints, PigeonRetinalEnv
 import sys
 sys.path.append('src/rlkit_ppo')
 
@@ -14,9 +14,7 @@ from rlkit.torch.torch_rl_algorithm import TorchBatchRLAlgorithm
 
 import argparse
 
-def experiment(variant, args):
-    expl_env = NormalizedBoxEnv(PigeonEnv3Joints(args.body_speed, args.reward_code, args.max_offset))
-    eval_env = NormalizedBoxEnv(PigeonEnv3Joints(args.body_speed, args.reward_code, args.max_offset))
+def experiment(expl_env, eval_env, variant, args):
     obs_dim = expl_env.observation_space.low.size
     action_dim = eval_env.action_space.low.size
 
@@ -85,13 +83,24 @@ def experiment(variant, args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument('-env', '--environment', type=str,
+                        default = "PigeonEnv3Joints",
+                        help = 'name of environment: \n' + \
+                               '  PigeonEnv3Joints \n' + \
+                               '  PigeonRetinalEnv')
     parser.add_argument('-bs', '--body_speed', type=float, default=1.0,
                         help='pigeon body speed')
     parser.add_argument('-rc', '--reward_code', type=str,
                         default="head_stable_manual_reposition",
-                        help='specify reward function: \n' + \
+                        help='specify reward function \n' + \
+                             'PigeonEnv3Joints: \n' + \
                              '  head_stable_manual_reposition \n' + \
-                             '  head_stable_manual_reposition_strict_angle')
+                             '  head_stable_manual_reposition_strict_angle \n' + \
+                             'PigeonRetinalEnv \n' + \
+                             '  motion_parallax \n' + \
+                             '  retinal_stabilization \n' + \
+                             '  fifty_fifty'
+                             )
     parser.add_argument('-mo', '--max_offset', type=float,
                         default=1.0,
                         help='specify max offset for aligning head to target')
@@ -123,10 +132,25 @@ if __name__ == "__main__":
         ),
     )
 
+    # Select environment
+    env_code = None
+    expl_env = None
+    eval_env = None
+    if args.environment == "PigeonEnv3Joints":
+        env_code = 'sac_pigeon_3_joints_'
+        expl_env = NormalizedBoxEnv(PigeonEnv3Joints(args.body_speed, args.reward_code, args.max_offset))
+        eval_env = NormalizedBoxEnv(PigeonEnv3Joints(args.body_speed, args.reward_code, args.max_offset))
+    elif args.environment == "PigeonRetinalEnv":
+        env_code = 'sac_pigeon_retinal_env_'
+        expl_env = NormalizedBoxEnv(PigeonRetinalEnv(args.body_speed, args.reward_code))
+        eval_env = NormalizedBoxEnv(PigeonRetinalEnv(args.body_speed, args.reward_code))
+    else:
+        raise ValueError("Unknown pigeon gym environment")
+
     # setting up argparse params (body speed and reward function)
-    setup_logger('sac_pigeon_3_joints_' + args.reward_code + \
+    setup_logger(env_code + args.reward_code + \
                  '_body_speed_' + str(args.body_speed) + \
                  '_max_offset_' + str(args.max_offset),
                  variant=variant)
     ptu.set_gpu_mode(True)  # optionally set the GPU (default=False)
-    experiment(variant, args)
+    experiment(expl_env, eval_env, variant, args)

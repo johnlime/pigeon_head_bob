@@ -292,18 +292,18 @@ class PigeonEnv3Joints(gym.Env):
             ## Needs head_stable_manual_reposition reward function to execute
             try:
                 # init visualize max_offset
-                self.render_target_area = rendering.make_circle( \
+                render_target_area = rendering.make_circle( \
                     radius=VIEWPORT_SCALE * self.max_offset,
                     res=30,
                     filled=True)
-                self.target_translate = rendering.Transform(
+                target_translate = rendering.Transform(
                     translation = VIEWPORT_SCALE * self.head_target_location - self.camera_trans,
                     rotation = 0.0,
                     scale = VIEWPORT_SCALE * np.ones(2)
                 )
-                self.render_target_area.add_attr(self.target_translate)
-                self.render_target_area.set_color(0.0, 1.0, 0.0)
-                self.viewer.add_geom(self.render_target_area)
+                render_target_area.add_attr(self.target_translate)
+                render_target_area.set_color(0.0, 1.0, 0.0)
+                self.viewer.add_geom(render_target_area)
             except:
                 pass
 

@@ -253,10 +253,6 @@ class PigeonEnv3Joints(gym.Env):
 
         return reward
 
-    def _head_stable_movement_minimizer(self):
-        reward = 0
-        return reward
-
     def step(self, action):
         assert self.action_space.contains(action)
         # self.world.Step(self.timeStep, self.vel_iters, self.pos_iters)

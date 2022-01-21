@@ -23,11 +23,11 @@ def headtrack(policy, env, dest_path):
         body_trajectory.append(observation[9])
     env.close()
 
-    df = pd.DataFrame()
+    df = pd.DataFrame(columns = ["Head Position", "Head Angle", "Body"])
     df["Head Position"] = head_position_trajectory
     df["Head Angle"] = head_angle_trajectory
     df["Body"] = body_trajectory
-    df.to_csv(dest_path + "trajectory.csv")
+    df.to_csv(dest_path + "trajectory.csv", index=False)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

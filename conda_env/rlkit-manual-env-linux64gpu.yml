@@ -100,4 +100,3 @@ dependencies:
     - pygame==2.0.2
     - smmap==4.0.0
     - typing-extensions==3.10.0.2
-prefix: /home/mioto/anaconda3/envs/rlkit-manual

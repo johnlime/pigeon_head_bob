@@ -10,7 +10,8 @@ import os
 import pandas as pd
 
 def headtrack(policy, env, dest_path):
-    head_position_trajectory = [] #np.empty((1000, 2))
+    head_position_x_trajectory = []
+    head_position_y_trajectory = []
     head_angle_trajectory = []
     body_trajectory = []
     observation = env.reset()
@@ -18,13 +19,15 @@ def headtrack(policy, env, dest_path):
         action = policy.get_action(torch.from_numpy(observation))[0]
         env.step(action)
         observation, reward, done, info = env.step(action)
-        head_position_trajectory.append(observation[:2])
+        head_position_x_trajectory.append(observation[0])
+        head_position_y_trajectory.append(observation[1])
         head_angle_trajectory.append(observation[2])
         body_trajectory.append(observation[9])
     env.close()
 
-    df = pd.DataFrame(columns = ["Head Position", "Head Angle", "Body"])
-    df["Head Position"] = head_position_trajectory
+    df = pd.DataFrame(columns = ["Head Position X", "Head Position Y", "Head Angle", "Body"])
+    df["Head Position X"] = head_position_x_trajectory
+    df["Head Position Y"] = head_position_y_trajectory
     df["Head Angle"] = head_angle_trajectory
     df["Body"] = body_trajectory
     df.to_csv(dest_path + "trajectory.csv", index=False)
